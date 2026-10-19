@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S02 Simple File Tools Openai - 代码解析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; padding: 0; }
+        .code-scroll { scrollbar-width: thin; scrollbar-color: #6366f1 #1e1b4b; }
+        .code-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .code-scroll::-webkit-scrollbar-track { background: #1e1b4b; }
+        .code-scroll::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 3px; }
+        .content-scroll { scrollbar-width: thin; scrollbar-color: #475569 #1e293b; }
+        .content-scroll::-webkit-scrollbar { width: 6px; }
+        .content-scroll::-webkit-scrollbar-track { background: #1e293b; }
+        .content-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .collapse-btn { transition: transform 0.3s ease; }
+        .collapse-btn.expanded { transform: rotate(180deg); }
+        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(99, 102, 241, 0.15); }
+        .active-item { background: rgba(99, 102, 241, 0.2) !important; border-color: #6366f1 !important; }
+        .resizer { width: 6px; cursor: col-resize; background: #334155; transition: background 0.2s; position: relative; z-index: 10; }
+        .resizer:hover { background: #6366f1; }
+        .resizer::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #334155; border-radius: 50%; opacity: 0; transition: opacity 0.2s; }
+        .resizer:hover::before { opacity: 1; background: #6366f1; }
+        .flowchart-box {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 15px;
+            overflow: auto;
+            cursor: grab;
+        }
+        .flowchart-box:active { cursor: grabbing; }
+        .flowchart-box svg {
+            display: block;
+            max-width: none;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 h-screen overflow-hidden">
+    <nav class="fixed top-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-b border-indigo-500/20 z-50">
+        <div class="px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white">S02 Simple File Tools Openai</h1>
+                    <p class="text-xs text-indigo-400">Python Code Analysis - s02_simple_file_tools_openai.py</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-400">Python</span>
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div id="container" class="h-screen pt-14 flex">
+        <div id="main-panel" class="h-full flex flex-col border-r border-slate-700/50" style="width: 40%;">
+            <div class="bg-slate-800/50 border-b border-slate-700/50 px-4 py-3">
+                <h2 class="text-white font-semibold">程序视图</h2>
+                <p class="text-xs text-gray-400">s02_simple_file_tools_openai.py</p>
+            </div>
+            <div class="flex border-b border-slate-700/50">
+                <button id="tab-code" class="px-4 py-2 text-sm font-medium transition-colors text-indigo-400 bg-indigo-500/10 border-b-2 border-indigo-500" onclick="switchTab('code')">代码</button>
+                <button id="tab-flow" class="px-4 py-2 text-sm font-medium transition-colors text-gray-400 hover:text-white" onclick="switchTab('flow')">流程图</button>
+            </div>
+            <div id="main-code-item" class="flex-1 overflow-auto p-4 cursor-pointer " onclick="showExplanation('main')">
+                <div class="bg-slate-800/70 rounded-xl border border-indigo-500/50 p-4 active-item">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="ml-2 text-xs text-gray-500">s02_simple_file_tools_openai.py</span>
+                    </div>
+                    <div class="bg-slate-900 rounded-lg p-4 overflow-auto code-scroll">
+                        <pre class="text-xs leading-relaxed"><code class="language-python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+s02_simple_file_tools_openai.py - 文件工具（OpenAI 版 / 极简）
+
+s01 的循环一行不改，只把「一个 bash」换成「四个文件工具 + 一张分发表」，
+功能与 learn-claude-code s02 的 code.py 对齐（run_read / run_write / run_edit / run_glob）：
+
+    +----------+      +-------+      +-------------------------+
+    |   User   | ---&gt; |  LLM  | ---&gt; | Tool Dispatch           |
+    |  prompt  |      |       |      | run_bash    -&gt; 跑命令   |
+    +----------+      +---+---+      | read_file   -&gt; 读文件   |
+                          ^          | write_file  -&gt; 写文件   |
+                          |          | edit_file   -&gt; 补丁替换 |
+                          +----------+ glob_files  -&gt; 路径匹配 |
+                         tool_result +-------------------------+
+
+    + safe_path(): 文件工具一律限制在工作目录内
+    + TOOL_MAP 分发，替换 s01 里硬编码的 run_bash 调用
+
+用法：
+    pip install openai python-dotenv
+    python s02_simple_file_tools_openai.py
+&#34;&#34;&#34;
+
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+# tool_description_generator.py 可能在本目录，也可能在上一层目录
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+try:
+    from tool_description_generator import generate_tool_description
+except ImportError:
+    sys.exit(&#34;[Error] 未找到 tool_description_generator.py，请把它放在本文件同级或上层目录。&#34;)
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+# Windows 控制台：切到 UTF-8 代码页，避免 print 中文抛 UnicodeEncodeError
+if os.name == &#34;nt&#34;:
+    os.system(&#34;chcp 65001 &gt; nul&#34;)
+    os.system(&#34;&#34;)
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding=&#34;utf-8&#34;, errors=&#34;replace&#34;)
+    except Exception:
+        pass
+
+load_dotenv(override=True)
+
+# ---------- LLM 客户端（OpenAI 兼容协议） ----------
+client = OpenAI(
+    api_key=os.getenv(&#34;OPENAI_API_KEY&#34;),
+    base_url=os.getenv(&#34;OPENAI_BASE_URL&#34;, &#34;https://api.deepseek.com&#34;),
+)
+MODEL = os.getenv(&#34;MODEL_ID&#34;, &#34;deepseek-chat&#34;)
+
+WORKDIR = Path.cwd().resolve()
+
+SYSTEM = (
+    f&#34;You are a coding agent at {WORKDIR}. Use tools to solve tasks. Act, don&#39;t explain. &#34;
+    &#34;Prefer read_file/glob_files over bash, and edit_file over write_file. &#34;
+    &#34;The shell is Windows cmd.exe: use dir / type / echo / findstr / copy / del, &#34;
+    &#34;never Unix commands like ls / cat / grep / wc.&#34;
+)
+
+MAX_ROUNDS = 40  # 安全上限，防止模型不停调用工具烧钱
+
+
+# 工具注册表：函数名 -&gt; 真实函数
+TOOL_MAP = {
+    &#34;run_bash&#34;: run_bash,
+    &#34;read_file&#34;: read_file,
+    &#34;write_file&#34;: write_file,
+    &#34;edit_file&#34;: edit_file,
+    &#34;glob_files&#34;: glob_files,
+}
+
+# 用 generate_tool_description 自动生成 OpenAI 规范的工具描述
+TOOLS = [generate_tool_description(fn) for fn in TOOL_MAP.values()]
+def main():
+    print(&#34;s02: File Tools (OpenAI, simple) - &#34; + &#34;, &#34;.join(TOOL_MAP))
+    print(f&#34;model  = {MODEL}&#34;)
+    print(f&#34;base   = {client.base_url}&#34;)
+    print(f&#34;cwd    = {WORKDIR}&#34;)
+    print(&#34;输入问题并回车发送，输入 q 退出。\n&#34;)
+
+    history = [{&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: SYSTEM}]
+    while True:
+        try:
+            query = input(&#34;\033[36ms02 &gt;&gt; \033[0m&#34;)
+        except (EOFError, KeyboardInterrupt):
+            break
+        if query.strip().lower() in (&#34;q&#34;, &#34;exit&#34;, &#34;&#34;):
+            break
+
+        history.append({&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: _sanitize(query)})
+        answer = agent_loop(history)
+        print(answer)
+        print()
+
+
+if __name__ == &#34;__main__&#34;:
+    if not os.getenv(&#34;OPENAI_API_KEY&#34;):
+        sys.exit(&#34;[Error] 缺少 OPENAI_API_KEY，请在 .env 中配置。&#34;)
+    main()</code></pre>
+                    </div>
+                </div>
+            </div>
+            <div id="main-flow-item" class="flex-1 overflow-auto p-4 hidden">
+                <div class="bg-slate-800/70 rounded-xl border border-indigo-500/50 p-4 h-full flex flex-col">
+                    <div class="flex gap-2 mb-4 overflow-x-auto pb-2 flex-shrink-0">
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-indigo-500 text-white" onclick="switchFlowchart(0)">组件关系图</button>
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-slate-700 text-gray-300 hover:bg-slate-600" onclick="switchFlowchart(1)">主程序执行流程图</button>
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-slate-700 text-gray-300 hover:bg-slate-600" onclick="switchFlowchart(2)">agent_loop 调用流程图</button>
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-slate-700 text-gray-300 hover:bg-slate-600" onclick="switchFlowchart(3)">文件工具安全路径流程图</button>
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-slate-700 text-gray-300 hover:bg-slate-600" onclick="switchFlowchart(4)">run_bash 输出处理流程图</button>
+                        
+                    </div>
+                    
+                    <div id="flowchart-0" class="flex-1 ">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 707 580" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-99420be7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="287.3" y1="70.0" x2="242.7" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="262.6" y1="190.0" x2="386.9" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="238.2" y1="190.0" x2="265.2" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="239.1" y1="310.0" x2="107.4" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="261.2" y1="310.0" x2="217.8" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="284.4" y1="310.0" x2="334.1" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="307.7" y1="310.0" x2="450.3" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="316.5" y1="305.1" x2="574.0" y2="392.5" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="411.2" y1="70.0" x2="422.2" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="397.1" y1="70.0" x2="283.4" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="119.0" y1="429.1" x2="312.0" y2="512.2" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="119.0" y1="423.1" x2="435.0" y2="515.9" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="209.8" y1="430.0" x2="221.2" y2="510.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="326.1" y1="430.0" x2="244.4" y2="510.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="442.3" y1="430.0" x2="267.7" y2="510.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><line x1="574.0" y1="425.4" x2="272.0" y2="515.7" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-99420be7)"/><g><rect x="263.5" y="30.0" width="70" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="298.5" y="54.2">main</tspan></text></g><g><rect x="180.0" y="150.0" width="103" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="231.5" y="174.2">agent_loop</tspan></text></g><g><rect x="227.5" y="270.0" width="89" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="272.0" y="294.2">TOOL_MAP</tspan></text></g><g><rect x="373.5" y="30.0" width="70" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="408.5" y="54.2">TOOLS</tspan></text></g><g><rect x="323.0" y="150.0" width="204" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="425.0" y="174.2">generate_tool_description</tspan></text></g><g><rect x="30.0" y="390.0" width="89" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="74.5" y="414.2">run_bash</tspan></text></g><g><rect x="159.0" y="390.0" width="96" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="207.0" y="414.2">read_file</tspan></text></g><g><rect x="295.0" y="390.0" width="103" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="346.5" y="414.2">write_file</tspan></text></g><g><rect x="438.0" y="390.0" width="96" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="486.0" y="414.2">edit_file</tspan></text></g><g><rect x="574.0" y="390.0" width="103" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="625.5" y="414.2">glob_files</tspan></text></g><g><rect x="176.0" y="510.0" width="96" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="224.0" y="534.2">safe_path</tspan></text></g><g><rect x="312.0" y="510.0" width="83" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="353.5" y="534.2">_decode</tspan></text></g><g><rect x="435.0" y="510.0" width="96" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="483.0" y="534.2">_sanitize</tspan></text></g><g><rect x="356.5" y="270.0" width="123" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="418.0" y="294.2">OpenAI client</tspan></text></g><rect x="249.0" y="101.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="265.0" y="113.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="298.7" y="221.0" width="52.2" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="324.8" y="233.0" text-anchor="middle" font-size="11" fill="#e2e8f0">请求LLM</text><rect x="223.8" y="221.0" width="56.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="251.8" y="233.0" text-anchor="middle" font-size="11" fill="#e2e8f0">分发工具</text><rect x="157.2" y="341.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="173.2" y="353.0" text-anchor="middle" font-size="11" fill="#e2e8f0">映射</text><rect x="223.5" y="341.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="239.5" y="353.0" text-anchor="middle" font-size="11" fill="#e2e8f0">映射</text><rect x="293.2" y="341.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="309.2" y="353.0" text-anchor="middle" font-size="11" fill="#e2e8f0">映射</text><rect x="363.0" y="341.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="379.0" y="353.0" text-anchor="middle" font-size="11" fill="#e2e8f0">映射</text><rect x="429.2" y="339.8" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="445.2" y="351.8" text-anchor="middle" font-size="11" fill="#e2e8f0">映射</text><rect x="400.8" y="101.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="416.8" y="113.0" text-anchor="middle" font-size="11" fill="#e2e8f0">生成</text><rect x="324.2" y="161.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="340.2" y="173.0" text-anchor="middle" font-size="11" fill="#e2e8f0">基于</text><rect x="199.5" y="461.6" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="215.5" y="473.6" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="261.0" y="460.5" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="277.0" y="472.5" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="199.5" y="461.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="215.5" y="473.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="269.2" y="461.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="285.2" y="473.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="339.0" y="461.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="355.0" y="473.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="407.0" y="461.5" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="423.0" y="473.5" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text></svg>
+                        </div>
+                    </div>
+                    
+                    <div id="flowchart-1" class="flex-1 hidden">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 1320" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-0518fdcf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="148.5" y1="70.0" x2="148.5" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="148.5" y1="190.0" x2="148.5" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="148.5" y1="310.0" x2="148.5" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="148.5" y1="430.0" x2="148.5" y2="510.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="148.5" y1="550.0" x2="148.5" y2="630.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="148.5" y1="670.0" x2="148.5" y2="750.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="148.5" y1="790.0" x2="148.5" y2="870.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="148.5" y1="910.0" x2="148.5" y2="990.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="148.5" y1="1030.0" x2="148.5" y2="1110.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="167.8" y1="1170.0" x2="219.2" y2="1250.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="135.8" y1="1170.0" x2="102.0" y2="1250.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><line x1="97.7" y1="1250.0" x2="144.3" y2="1030.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0518fdcf)"/><g><rect x="113.5" y="30.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="54.2">开始</tspan></text></g><g><rect x="79.5" y="150.0" width="138" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="174.2">导入依赖/配置路径</tspan></text></g><g><rect x="90.0" y="270.0" width="117" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="294.2">设置UTF-8编码</tspan></text></g><g><rect x="94.0" y="390.0" width="109" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="414.2">load_dotenv</tspan></text></g><g><rect x="74.5" y="510.0" width="148" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="534.2">初始化OpenAI客户端</tspan></text></g><g><rect x="69.0" y="630.0" width="159" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="654.2">构建TOOL_MAP与TOOLS</tspan></text></g><g><rect x="110.5" y="750.0" width="76" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="774.2">main()</tspan></text></g><g><rect x="89.0" y="870.0" width="119" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="894.2">初始化history</tspan></text></g><g><rect x="94.5" y="990.0" width="108" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="1014.2">读取用户输入</tspan></text></g><g><polygon points="148.5,1110.0 232.5,1140.0 148.5,1170.0 64.5,1140.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5" stroke-linejoin="round"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="148.5" y="1144.2">输入为q/EOF?</tspan></text></g><g><rect x="30.0" y="1250.0" width="127" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="93.5" y="1274.2">agent_loop处理</tspan></text></g><g><rect x="197.0" y="1250.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="232.0" y="1274.2">结束</tspan></text></g><rect x="183.5" y="1201.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="193.5" y="1213.0" text-anchor="middle" font-size="11" fill="#e2e8f0">是</text><rect x="108.9" y="1201.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="118.9" y="1213.0" text-anchor="middle" font-size="11" fill="#e2e8f0">否</text><rect x="99.0" y="1131.0" width="44.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="121.0" y="1143.0" text-anchor="middle" font-size="11" fill="#e2e8f0">下一轮</text></svg>
+                        </div>
+                    </div>
+                    
+                    <div id="flowchart-2" class="flex-1 hidden">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 335 980" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-e73044a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="167.5" y1="70.0" x2="167.5" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="167.5" y1="210.0" x2="167.5" y2="290.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="172.7" y1="210.0" x2="252.5" y2="670.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="167.5" y1="330.0" x2="167.5" y2="410.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="186.8" y1="470.0" x2="238.2" y2="550.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="150.4" y1="470.0" x2="104.9" y2="550.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="96.7" y1="590.0" x2="109.3" y2="670.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="121.7" y1="710.0" x2="158.3" y2="790.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="167.5" y1="830.0" x2="167.5" y2="910.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="167.5" y1="910.0" x2="167.5" y2="210.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><line x1="251.8" y1="590.0" x2="255.2" y2="670.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-e73044a3)"/><g><rect x="104.0" y="30.0" width="127" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="167.5" y="54.2">进入agent_loop</tspan></text></g><g><polygon points="167.5,150.0 272.5,180.0 167.5,210.0 62.5,180.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5" stroke-linejoin="round"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="167.5" y="184.2">轮次&lt;MAX_ROUNDS?</tspan></text></g><g><rect x="97.5" y="290.0" width="140" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="167.5" y="314.2">调用LLM(history)</tspan></text></g><g><polygon points="167.5,410.0 258.0,440.0 167.5,470.0 77.0,440.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5" stroke-linejoin="round"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="167.5" y="444.2">有tool_calls?</tspan></text></g><g><rect x="30.0" y="550.0" width="127" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="93.5" y="574.2">遍历tool_calls</tspan></text></g><g><rect x="44.0" y="670.0" width="137" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="112.5" y="694.2">TOOL_MAP查找函数</tspan></text></g><g><rect x="113.5" y="790.0" width="108" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="167.5" y="814.2">执行工具函数</tspan></text></g><g><rect x="102.0" y="910.0" width="131" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="167.5" y="934.2">结果加入history</tspan></text></g><g><rect x="197.0" y="550.0" width="108" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="251.0" y="574.2">返回最终回复</tspan></text></g><g><rect x="221.0" y="670.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="256.0" y="694.2">结束</tspan></text></g><rect x="157.5" y="241.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="167.5" y="253.0" text-anchor="middle" font-size="11" fill="#e2e8f0">是</text><rect x="183.9" y="431.0" width="57.4" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="212.6" y="443.0" text-anchor="middle" font-size="11" fill="#e2e8f0">否(超限)</text><rect x="202.5" y="501.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="212.5" y="513.0" text-anchor="middle" font-size="11" fill="#e2e8f0">否</text><rect x="117.7" y="501.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="127.7" y="513.0" text-anchor="middle" font-size="11" fill="#e2e8f0">是</text><rect x="139.5" y="551.0" width="56.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="167.5" y="563.0" text-anchor="middle" font-size="11" fill="#e2e8f0">继续循环</text></svg>
+                        </div>
+                    </div>
+                    
+                    <div id="flowchart-3" class="flex-1 hidden">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 292 840" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-0936f82a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="146.0" y1="70.0" x2="146.0" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0936f82a)"/><line x1="146.0" y1="190.0" x2="146.0" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0936f82a)"/><line x1="146.0" y1="310.0" x2="146.0" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0936f82a)"/><line x1="128.9" y1="450.0" x2="83.4" y2="530.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0936f82a)"/><line x1="160.3" y1="450.0" x2="198.5" y2="530.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0936f82a)"/><line x1="84.3" y1="570.0" x2="133.7" y2="650.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0936f82a)"/><line x1="146.0" y1="690.0" x2="146.0" y2="770.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0936f82a)"/><line x1="202.8" y1="570.0" x2="151.2" y2="770.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-0936f82a)"/><g><rect x="92.0" y="30.0" width="108" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="146.0" y="54.2">工具收到路径</tspan></text></g><g><rect x="86.0" y="150.0" width="120" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="146.0" y="174.2">safe_path解析</tspan></text></g><g><rect x="80.5" y="270.0" width="131" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="146.0" y="294.2">resolve绝对路径</tspan></text></g><g><polygon points="146.0,390.0 231.5,420.0 146.0,450.0 60.5,420.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5" stroke-linejoin="round"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="146.0" y="424.2">在工作目录内?</tspan></text></g><g><rect x="30.0" y="530.0" width="84" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="72.0" y="554.2">返回路径</tspan></text></g><g><rect x="154.0" y="530.0" width="108" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="208.0" y="554.2">抛出越界错误</tspan></text></g><g><rect x="70.0" y="650.0" width="152" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="146.0" y="674.2">执行读/写/编辑/匹配</tspan></text></g><g><rect x="111.0" y="770.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="146.0" y="794.2">结束</tspan></text></g><rect x="96.2" y="481.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="106.2" y="493.0" text-anchor="middle" font-size="11" fill="#e2e8f0">是</text><rect x="169.4" y="481.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="179.4" y="493.0" text-anchor="middle" font-size="11" fill="#e2e8f0">否</text></svg>
+                        </div>
+                    </div>
+                    
+                    <div id="flowchart-4" class="flex-1 hidden">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 228 1080" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-ee7e99d7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="114.0" y1="70.0" x2="114.0" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="190.0" x2="114.0" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="310.0" x2="114.0" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="450.0" x2="114.0" y2="770.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="450.0" x2="114.0" y2="530.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="570.0" x2="114.0" y2="650.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="570.0" x2="114.0" y2="770.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="690.0" x2="114.0" y2="770.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="810.0" x2="114.0" y2="890.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><line x1="114.0" y1="930.0" x2="114.0" y2="1010.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ee7e99d7)"/><g><rect x="57.5" y="30.0" width="113" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="54.2">run_bash开始</tspan></text></g><g><rect x="38.5" y="150.0" width="151" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="174.2">subprocess执行命令</tspan></text></g><g><rect x="48.5" y="270.0" width="131" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="294.2">_decode解码输出</tspan></text></g><g><polygon points="114.0,390.0 189.0,420.0 114.0,450.0 39.0,420.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5" stroke-linejoin="round"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="424.2">utf-8成功?</tspan></text></g><g><rect x="74.0" y="530.0" width="80" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="554.2">gbk解码</tspan></text></g><g><rect x="60.0" y="650.0" width="108" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="674.2">替换非法字符</tspan></text></g><g><rect x="30.0" y="770.0" width="168" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="794.2">_sanitize清理代理字符</tspan></text></g><g><rect x="72.0" y="890.0" width="84" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="914.2">返回输出</tspan></text></g><g><rect x="79.0" y="1010.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="114.0" y="1034.2">结束</tspan></text></g><rect x="104.0" y="601.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="114.0" y="613.0" text-anchor="middle" font-size="11" fill="#e2e8f0">是</text><rect x="104.0" y="481.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="114.0" y="493.0" text-anchor="middle" font-size="11" fill="#e2e8f0">否</text><rect x="98.0" y="601.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="114.0" y="613.0" text-anchor="middle" font-size="11" fill="#e2e8f0">失败</text><rect x="98.0" y="661.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="114.0" y="673.0" text-anchor="middle" font-size="11" fill="#e2e8f0">成功</text></svg>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div id="resizer1" class="resizer" onmousedown="startResize(event, 'resizer1')"></div>
+
+        <div id="components-panel" class="h-full flex flex-col border-r border-slate-700/50 bg-slate-800/30" style="width: 40%;">
+            <div class="bg-slate-800/50 border-b border-slate-700/50 px-4 py-3">
+                <h2 class="text-white font-semibold">组件列表</h2>
+                <p class="text-xs text-gray-400">核心类与函数实现</p>
+            </div>
+            <div class="flex-1 overflow-auto p-3 space-y-2 content-scroll">
+                
+                <div id="_decode-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('_decode-content'); showExplanation('_decode')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">_decode</h3>
+                                <p class="text-xs text-gray-400">按 utf-8 -&gt; gbk 顺序解码命令输出，都失败则替换非法字符</p>
+                            </div>
+                        </div>
+                        <svg id="_decode-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="_decode-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def _decode(data: bytes) -&gt; str:
+    &#34;&#34;&#34;按 utf-8 -&gt; gbk 顺序解码命令输出，都失败则替换非法字符&#34;&#34;&#34;
+    for enc in (&#34;utf-8&#34;, &#34;gbk&#34;):
+        try:
+            return data.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return data.decode(&#34;utf-8&#34;, errors=&#34;replace&#34;)</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="_sanitize-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('_sanitize-content'); showExplanation('_sanitize')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">_sanitize</h3>
+                                <p class="text-xs text-gray-400">去掉 Windows 控制台可能引入的孤立代理字符（如 \udcxx），否则 openai SDK 序列化会报错</p>
+                            </div>
+                        </div>
+                        <svg id="_sanitize-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="_sanitize-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def _sanitize(text) -&gt; str:
+    &#34;&#34;&#34;去掉 Windows 控制台可能引入的孤立代理字符（如 \\udcxx），否则 openai SDK 序列化会报错&#34;&#34;&#34;
+    text = &#34;&#34; if text is None else str(text)
+    return text.encode(&#34;utf-8&#34;, errors=&#34;replace&#34;).decode(&#34;utf-8&#34;)</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="run_bash-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('run_bash-content'); showExplanation('run_bash')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">run_bash</h3>
+                                <p class="text-xs text-gray-400">执行一条 shell 命令并返回它的输出</p>
+                            </div>
+                        </div>
+                        <svg id="run_bash-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="run_bash-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def run_bash(command: str) -&gt; str:
+    &#34;&#34;&#34;执行一条 shell 命令并返回它的输出
+
+    :param command: 要执行的 cmd 命令，例如 dir /b *.py、type a.txt、echo hi &gt; a.txt
+    :return: 命令的标准输出与错误输出（合并），无输出时返回占位文本
+    &#34;&#34;&#34;
+    dangerous = [&#34;rm -rf /&#34;, &#34;sudo&#34;, &#34;shutdown&#34;, &#34;reboot&#34;, &#34;&gt; /dev/&#34;, &#34;format &#34;]
+    if any(d in command for d in dangerous):
+        return &#34;Error: Dangerous command blocked&#34;
+    try:
+        r = subprocess.run(
+            command,
+            shell=True,
+            cwd=str(WORKDIR),
+            capture_output=True,
+            timeout=120,
+        )
+        # 拿到原始字节后自己解码：Windows 中文输出多为 GBK，直接按 utf-8 解会得到替换符
+        raw = (r.stdout or b&#34;&#34;) + (r.stderr or b&#34;&#34;)
+        out = _decode(raw).strip()
+        if not out:
+            return f&#34;(no output, exit code {r.returncode})&#34;
+        return out[:50000]
+    except subprocess.TimeoutExpired:
+        return &#34;Error: Timeout (120s)&#34;
+    except (FileNotFoundError, OSError) as e:
+        return f&#34;Error: {e}&#34;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="safe_path-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('safe_path-content'); showExplanation('safe_path')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">safe_path</h3>
+                                <p class="text-xs text-gray-400">解析路径并确保它还在工作目录内</p>
+                            </div>
+                        </div>
+                        <svg id="safe_path-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="safe_path-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def safe_path(p: str) -&gt; Path:
+    &#34;&#34;&#34;解析路径并确保它还在工作目录内
+
+    :param p: 相对或绝对路径
+    :return: 落在工作目录内的绝对路径
+    &#34;&#34;&#34;
+    path = (WORKDIR / p).resolve()
+    if not str(path).lower().startswith(str(WORKDIR).lower()):
+        raise ValueError(f&#34;Path escapes workspace: {p}&#34;)
+    return path</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="read_file-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('read_file-content'); showExplanation('read_file')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 10V3L4 14h7v7l9-11h-7z&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">read_file</h3>
+                                <p class="text-xs text-gray-400">读取文件内容，可用 offset/limit 分页，避免大文件撑爆上下文</p>
+                            </div>
+                        </div>
+                        <svg id="read_file-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="read_file-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def read_file(path: str, offset: int = 1, limit: int = None) -&gt; str:
+    &#34;&#34;&#34;读取文件内容，可用 offset/limit 分页，避免大文件撑爆上下文
+
+    :param path: 文件路径，相对路径基于工作目录
+    :param offset: 从第几行开始读，从 1 开始计数
+    :param limit: 本次最多读多少行，不传则读到文件末尾
+    :return: 文件内容；还有剩余行时给出下一次的 offset 提示
+    &#34;&#34;&#34;
+    lines = safe_path(path).read_text(encoding=&#34;utf-8&#34;, errors=&#34;replace&#34;).splitlines()
+    start = max(1, offset)
+    end = len(lines) if not limit else min(len(lines), start + limit - 1)
+    out = &#34;\n&#34;.join(lines[start - 1:end])
+    if end &lt; len(lines):
+        out += f&#34;\n... ({len(lines) - end} more lines, continue with offset={end + 1})&#34;
+    return out</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="write_file-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('write_file-content'); showExplanation('write_file')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">write_file</h3>
+                                <p class="text-xs text-gray-400">把完整内容写入文件（新建，或整体覆盖已有文件）</p>
+                            </div>
+                        </div>
+                        <svg id="write_file-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="write_file-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def write_file(path: str, content: str) -&gt; str:
+    &#34;&#34;&#34;把完整内容写入文件（新建，或整体覆盖已有文件）
+
+    :param path: 目标文件路径，父目录不存在时自动创建
+    :param content: 文件的完整内容
+    :return: 写入结果
+    &#34;&#34;&#34;
+    file_path = safe_path(path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(content, encoding=&#34;utf-8&#34;)
+    return f&#34;Wrote {len(content)} bytes to {path}&#34;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="edit_file-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('edit_file-content'); showExplanation('edit_file')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">edit_file</h3>
+                                <p class="text-xs text-gray-400">按上下文做精确补丁替换：给出一段原文，替换成新片段（不用正则，只改这一处）</p>
+                            </div>
+                        </div>
+                        <svg id="edit_file-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="edit_file-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def edit_file(path: str, old_text: str, new_text: str) -&gt; str:
+    &#34;&#34;&#34;按上下文做精确补丁替换：给出一段原文，替换成新片段（不用正则，只改这一处）
+
+    :param path: 要修改的文件路径
+    :param old_text: 待替换的原文片段，需与文件内容逐字符一致，可跨多行
+    :param new_text: 替换后的新内容，传空串表示删除这段原文
+    :return: 修改结果
+    &#34;&#34;&#34;
+    file_path = safe_path(path)
+    text = file_path.read_text(encoding=&#34;utf-8&#34;)
+    if old_text not in text:
+        return f&#34;Error: text not found in {path}&#34;
+    file_path.write_text(text.replace(old_text, new_text, 1), encoding=&#34;utf-8&#34;)
+    return f&#34;Edited {path}&#34;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="glob_files-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('glob_files-content'); showExplanation('glob_files')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">glob_files</h3>
+                                <p class="text-xs text-gray-400">按 glob 模式匹配文件名或路径，改代码前先定位文件</p>
+                            </div>
+                        </div>
+                        <svg id="glob_files-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="glob_files-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def glob_files(pattern: str) -&gt; str:
+    &#34;&#34;&#34;按 glob 模式匹配文件名或路径，改代码前先定位文件
+
+    :param pattern: glob 模式，例如 **/*.py、*.md、src/**/*.ts；** 递归匹配任意层目录
+    :return: 匹配到的相对路径列表，无匹配时返回 (no matches)
+    &#34;&#34;&#34;
+    matches = sorted(str(p.relative_to(WORKDIR)) for p in WORKDIR.glob(pattern))
+    return &#34;\n&#34;.join(matches) if matches else &#34;(no matches)&#34;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="agent_loop-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('agent_loop-content'); showExplanation('agent_loop')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">agent_loop</h3>
+                                <p class="text-xs text-gray-400">反复调用 LLM，直到它不再请求工具为止</p>
+                            </div>
+                        </div>
+                        <svg id="agent_loop-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="agent_loop-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def agent_loop(messages: list) -&gt; str:
+    &#34;&#34;&#34;反复调用 LLM，直到它不再请求工具为止&#34;&#34;&#34;
+    for _ in range(MAX_ROUNDS):
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=messages,
+            tools=TOOLS,
+            tool_choice=&#34;auto&#34;,
+            max_tokens=8000,
+        )
+        message = response.choices[0].message
+
+        # 1) 追加 assistant 消息（有工具调用时必须带上 tool_calls）
+        assistant_msg = {&#34;role&#34;: &#34;assistant&#34;, &#34;content&#34;: _sanitize(message.content or &#34;&#34;)}
+        if message.tool_calls:
+            assistant_msg[&#34;tool_calls&#34;] = [
+                {
+                    &#34;id&#34;: tc.id,
+                    &#34;type&#34;: &#34;function&#34;,
+                    &#34;function&#34;: {
+                        &#34;name&#34;: tc.function.name,
+                        &#34;arguments&#34;: tc.function.arguments,
+                    },
+                }
+                for tc in message.tool_calls
+            ]
+        messages.append(assistant_msg)
+
+        # 2) 没有工具调用 =&gt; 循环结束
+        if not message.tool_calls:
+            return message.content or &#34;&#34;
+
+        # 3) 执行每个工具调用
+        for tc in message.tool_calls:
+            if message.content:
+                print(message.content)
+
+            func_name = tc.function.name
+            try:
+                func_args = json.loads(tc.function.arguments or &#34;{}&#34;)
+            except json.JSONDecodeError:
+                func_args = {}
+
+            if func_name not in TOOL_MAP:
+                output = f&#34;Error: Unknown tool {func_name}&#34;
+                print(f&#34;\033[31m! {output}\033[0m&#34;)
+            else:
+                print(f&#34;\033[33m$ {func_name} {str(func_args)[:300]}\033[0m&#34;)
+                try:
+                    output = TOOL_MAP[func_name](**func_args)
+                except Exception as e:  # 工具本身炸了也要把错误喂回模型
+                    output = f&#34;Error: {e}&#34;
+                print(output[:2000])
+
+            # 4) 按 OpenAI 规范把结果回传
+            messages.append(
+                {
+                    &#34;role&#34;: &#34;tool&#34;,
+                    &#34;tool_call_id&#34;: tc.id,
+                    &#34;content&#34;: _sanitize(output),
+                }
+            )
+
+    return &#34;[Stopped] Reached max rounds limit.&#34;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <div id="resizer2" class="resizer" onmousedown="startResize(event, 'resizer2')"></div>
+
+        <div id="explanation-panel" class="h-full flex flex-col" style="width: 20%;">
+            <div class="bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border-b border-indigo-500/20 px-4 py-3">
+            <h2 class="text-white font-semibold">代码解析</h2>
+            <p id="current-title" class="text-sm text-yellow-400">主程序入口</p>
+        </div>
+        <div id="explanation-content" class="flex-1 overflow-auto p-4 bg-slate-800/20 content-scroll">
+            <div id="explanation-main" class="explanation-section">
+                <div id="title-main" class="hidden">主程序入口</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">功能概述</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该程序是一个基于 OpenAI 兼容协议（默认对接 DeepSeek）的极简编码代理（coding agent）。它在 s01 版本“单一 bash 工具”的基础上，将工具集扩展为五个：run_bash、read_file、write_file、edit_file、glob_files，并通过一张工具分发表（TOOL_MAP）实现动态分发。程序以交互式 REPL 形式运行，用户输入自然语言任务，模型自主选择工具执行，直至给出最终答案。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">入口点与启动流程</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">脚本以 <code class="text-white font-medium">if __name__ == "__main__":<code class="text-white font-medium"> 作为入口。启动时首先检查环境变量 OPENAI_API_KEY 是否存在，缺失则通过 sys.exit 输出错误并终止。校验通过后调用 main() 函数。这种“先校验后执行”的结构避免了在缺少凭证时仍初始化客户端并进入循环。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">模块导入与路径处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">程序在导入阶段做了两处关键处理。第一，将当前文件所在目录及其父目录插入 sys.path 头部，以便无论 tool_description_generator.py 位于同级还是上层目录都能被导入；若导入失败则立即 sys.exit 并提示用户放置位置。第二，针对 Windows 控制台，通过 chcp 65001 切换代码页，并对 sys.stdout 与 sys.stderr 调用 reconfigure 设置 UTF-8 编码与 replace 错误策略，防止中文输出触发 UnicodeEncodeError。这两步保证了跨平台与中文环境的健壮性。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">配置加载与客户端初始化</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">使用 load_dotenv(override=True) 从 .env 加载环境变量，override=True 表示环境文件中的值优先于已存在的系统环境变量。随后创建 OpenAI 客户端，api_key 取自 OPENAI_API_KEY，base_url 默认回退到 https://api.deepseek.com，模型 ID 默认 deepseek-chat。WORKDIR 通过 Path.cwd().resolve() 获取当前工作目录的绝对路径，作为后续文件工具的沙箱根目录。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">系统提示词设计</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">SYSTEM 常量拼接了工作目录路径，并给出行为约束：以行动代替解释、优先使用 read_file/glob_files 而非 bash、优先 edit_file 而非 write_file。同时明确告知模型 shell 为 Windows cmd.exe，应使用 dir/type/echo/findstr 等命令而非 Unix 命令。这一提示词直接影响了模型选择工具与生成命令的方式，是保证工具调用正确性的关键配置。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">工具注册与描述生成</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">TOOL_MAP 是一个字典，将工具名称字符串映射到对应的真实函数对象，作为运行时分发的依据。TOOLS 列表则通过对 TOOL_MAP.values() 中的每个函数调用 generate_tool_description 自动生成符合 OpenAI function calling 规范的描述结构。这种“注册表 + 自动描述”的设计使得新增工具只需在 TOOL_MAP 中添加一项，描述与分发自动同步，降低了维护成本。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">主循环逻辑</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">main() 首先打印启动横幅，包括工具列表、模型、base_url、工作目录及使用说明。随后初始化 history 列表，首条为 system 消息。进入 while True 循环：通过 input 读取用户输入（带青色 ANSI 提示符），捕获 EOFError 与 KeyboardInterrupt 以优雅退出；若输入为 q、exit 或空字符串则跳出循环。否则将经过 _sanitize 处理的用户消息追加到 history，调用 agent_loop(history) 获取回答并打印，随后输出空行分隔。循环持续直到用户主动退出。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">代理循环与安全上限</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">agent_loop 函数（代码中未展示实现，但由调用方式可推断）负责与模型多轮交互：发送 history 给模型，解析返回的 tool_calls，通过 TOOL_MAP 分发执行对应工具，将 tool_result 追加回 history 并再次请求模型，直至模型返回纯文本答案。MAX_ROUNDS = 40 作为安全上限，防止模型陷入无限工具调用循环导致费用失控，是成本控制的重要保护机制。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">安全边界设计</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">文档字符串提到 safe_path() 将所有文件工具限制在工作目录内，这是防止路径穿越攻击（如 ../../etc/passwd）的核心防护。结合 WORKDIR 的绝对路径解析，文件读写与 glob 匹配均被约束在项目沙箱中，避免代理误操作或恶意操作影响系统其他区域。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">整体架构评价</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该程序采用“注册表分发 + 自动工具描述 + 交互式 REPL + 多轮代理循环”的经典 agent 架构，结构清晰、扩展性好。通过环境变量与 .env 实现配置外置，通过 sys.path 注入与编码重配置提升可移植性，通过 MAX_ROUNDS 与 safe_path 提供成本与安全双重保障。整体代码简洁，符合“极简文件工具代理”的设计目标。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            
+            <div id="explanation-_decode" class="explanation-section hidden">
+                <div id="title-_decode" class="hidden">_decode</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">函数功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数 _decode 的核心功能是将字节串（bytes）转换为字符串（str），并采用多编码回退策略来提升解码成功率。设计意图是应对命令输出等外部数据来源编码不确定的场景：在中文环境下，命令输出可能是 UTF-8 编码，也可能是 GBK 编码，函数通过依次尝试两种编码来尽可能正确地还原文本内容。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">参数与返回值</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数接收一个 bytes 类型的参数 data，返回一个 str 类型的结果。类型注解明确了输入输出契约，便于静态检查和调用方理解。返回值始终为字符串，不会抛出解码异常，属于“永不失败”的容错型接口。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">编码回退策略</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数使用 for 循环遍历编码元组 ("utf-8", "gbk")，按顺序尝试解码。UTF-8 优先是因为它是现代系统与跨平台场景的主流编码，覆盖面广；GBK 作为后备，用于兼容中文 Windows 环境下的传统输出。这种顺序设计兼顾了通用性与本地化兼容性。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">异常处理机制</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">在 try 块中调用 data.decode(enc)，若抛出 UnicodeDecodeError 则通过 continue 跳过当前编码，进入下一次循环尝试。这里只捕获 UnicodeDecodeError 这一特定异常，而非宽泛的 Exception，体现了精确异常处理的原则，避免掩盖其他潜在错误（如类型错误）。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">最终兜底方案</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">当两种编码均解码失败时，循环结束，函数执行 data.decode("utf-8", errors="replace")。该兜底使用 errors="replace" 参数，将无法解码的字节替换为替换字符（通常是 U+FFFD），保证函数在任何输入下都能返回字符串而不抛出异常，提升了程序的健壮性。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计权衡</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该实现以“尽量正确、绝不崩溃”为优先目标。其局限在于：若数据实际为 GBK 编码但恰好能被 UTF-8 部分解码（较少见但存在），可能产生乱码而非回退到 GBK；此外 errors="replace" 会丢失原始字节信息。对于日志、终端输出等容错场景，这些权衡是合理且常见的。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">代码风格</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数简洁紧凑，使用元组遍历替代重复的 try-except 块，减少了代码冗余。文档字符串清晰说明了回退顺序与兜底行为，可读性良好，符合 Python 惯用写法。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-_sanitize" class="explanation-section hidden">
+                <div id="title-_sanitize" class="hidden">_sanitize</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数用于清洗字符串中的非法 Unicode 字符，特别是 Windows 控制台环境下可能产生的孤立代理字符（lone surrogate，如 \udcxx）。这类字符在 Python 内部可以存在于 str 对象中，但无法被 UTF-8 正常编码，会导致 openai SDK 在 JSON 序列化时抛出 UnicodeEncodeError 或类似异常。函数通过一次编码-解码往返，将不可编码的字符替换为安全字符，从而保证后续序列化流程稳定。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计意图</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数名以下划线开头，表明它是模块内部使用的私有工具函数，不对外暴露。其设计目标单一且明确：作为数据发送给外部 SDK 之前的防御性清洗层。注释直接点明了问题来源（Windows 控制台）和后果（openai SDK 序列化报错），说明这是一个针对特定运行时环境的兼容性补丁，而非通用的文本处理工具。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">空值与类型归一化</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">第一行 text = "" if text is None else str(text) 承担两个职责：一是将 None 转换为空字符串，避免后续 encode 调用抛出 AttributeError；二是对非字符串输入（如数字、对象）调用 str() 进行强制转换，保证函数对任意输入类型都具有鲁棒性。这种写法使函数可以安全地用在可能传入 None 或混合类型的字段上，例如从日志、终端输出或外部接口获取的文本。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">编码解码往返机制</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">核心实现 text.encode("utf-8", errors="replace").decode("utf-8") 利用了 UTF-8 编解码器对代理字符的处理规则。孤立代理字符（U+D800 至 U+DFFF 范围内未配对的值）在 UTF-8 中是非法的，encode 时配合 errors="replace" 会将其替换为问号字符（?，即 U+003F），而不是抛出异常。随后 decode("utf-8") 将字节序列还原为合法的 str。由于替换发生在编码阶段，解码阶段不会遇到非法字节，因此无需再指定 errors 参数。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">技术要点与边界</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该方案的关键在于 errors="replace" 参数的选择：若使用默认的 errors="strict"，encode 会直接抛出 UnicodeEncodeError；若使用 errors="ignore"，则会静默丢弃字符，可能造成信息丢失且不易察觉。replace 策略在保证不崩溃的同时保留了字符位置的可见痕迹。需要注意的是，该函数只处理孤立代理字符这一类问题，对于其他控制字符（如 \x00、ANSI 转义序列）并不会清除，因此它并非通用的输入净化函数。此外，编码解码往返对正常文本是无损的，性能开销为一次内存拷贝，对于常规长度的文本可以忽略。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">使用场景</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">典型调用位置是在构造 API 请求体之前，对用户输入、终端捕获内容或日志文本统一过一遍 _sanitize，确保送入 openai SDK 的 JSON 序列化环节不会因编码问题中断。这种"边界清洗"模式在跨平台、跨进程的数据传递中是一种常见且低成本的防御性编程实践。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-run_bash" class="explanation-section hidden">
+                <div id="title-run_bash" class="hidden">run_bash</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数 run_bash 的核心功能是封装 subprocess.run，对外提供一个受控的 shell 命令执行入口：接收一条命令字符串，在指定的工作目录下执行，并将标准输出与标准错误合并后以字符串形式返回。其设计意图是让上层调用者（如 AI Agent、自动化脚本或工具层）能够方便地执行系统命令并获取结果，同时通过危险命令过滤、超时控制和输出截断等手段降低执行风险。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">安全防护机制</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数开头定义了一个 dangerous 列表，包含 rm -rf /、sudo、shutdown、reboot、> /dev/、format 等高风险片段，并通过 any(d in command for d in dangerous) 做子串匹配。一旦命中即直接返回错误提示，不进入执行流程。需要注意的是，这种基于子串的黑名单过滤属于较弱的防护手段，容易被绕过（例如使用变量拼接、路径变形、大小写变体或等价命令），因此它更适合作为“防误操作”的第一道门槛，而非严格的安全沙箱。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">命令执行细节</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">实际执行使用 subprocess.run，并设置 shell=True，意味着命令会交由系统 shell 解释执行，从而支持管道、重定向、通配符等 shell 特性，这也是文档字符串中示例（如 echo hi > a.txt）能够工作的前提。cwd=str(WORKDIR) 将工作目录固定到预定义的 WORKDIR，保证命令在受控目录下运行，避免污染其他路径。capture_output=True 捕获 stdout 与 stderr，timeout=120 设置 120 秒超时，防止命令长时间挂起阻塞调用方。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">输出解码处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">代码没有直接使用 r.stdout.decode()，而是将 stdout 与 stderr 的原始字节相加后交给自定义的 _decode 函数处理。注释明确指出原因：Windows 中文环境下命令输出多为 GBK 编码，若直接按 UTF-8 解码会产生替换符（乱码）。这说明 _decode 很可能实现了多编码尝试（如先 UTF-8 再 GBK/GB18030）的容错解码逻辑，体现了对跨平台、跨编码场景的细致考虑。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">输出规范化与截断</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">解码后调用 .strip() 去除首尾空白；若结果为空，则返回包含退出码的占位文本 (no output, exit code N)，便于调用方区分“命令成功但无输出”与“执行失败”的情况。非空输出则通过 out[:50000] 截断到 5 万字符，防止超长输出（如大文件内容、日志）撑爆上下文或内存，这对面向大模型的工具调用场景尤为重要。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">异常处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数通过 try/except 覆盖了两类异常：subprocess.TimeoutExpired 返回固定的超时错误文本；FileNotFoundError 与 OSError 则返回包含异常信息的错误字符串。所有异常都被转换为字符串返回值而非向上抛出，使得该函数具有“永不抛异常”的契约，调用方无需额外 try 包裹，接口更稳健。不过这也意味着调用方只能通过返回值前缀 Error: 来判断失败，缺乏结构化的错误类型区分。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">整体评价</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">整体实现简洁实用，兼顾了安全性（黑名单+超时）、可用性（shell 特性、工作目录固定）、健壮性（编码容错、异常兜底）与资源控制（输出截断）。主要改进空间在于：危险命令检测可改为更严格的白名单或参数化执行；错误返回可考虑结构化（如返回字典或自定义异常）；以及 shell=True 本身带来的注入风险在面向不可信输入时应谨慎评估。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-safe_path" class="explanation-section hidden">
+                <div id="title-safe_path" class="hidden">safe_path</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数 safe_path 的核心功能是将用户传入的路径字符串解析为绝对路径，并强制校验解析后的路径必须位于预定义的工作目录 WORKDIR 之内，否则抛出异常。其设计意图是防止路径穿越攻击（Path Traversal），确保程序只能访问受限的工作区，属于典型的安全边界防护函数。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">路径解析机制</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数首先通过 WORKDIR / p 使用 pathlib 的路径拼接运算符将工作目录与输入路径组合。当 p 为相对路径时，会相对于 WORKDIR 解析；当 p 为绝对路径时，pathlib 的 / 运算符会直接采用右侧的绝对路径，从而覆盖左侧的 WORKDIR。随后调用 resolve() 方法，该方法会规范化路径、消除 . 和 .. 等相对片段，并解析符号链接，得到最终的绝对路径。这一步是安全校验的关键前提，因为只有规范化后的路径才能真实反映最终访问位置。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">安全校验逻辑</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">校验通过比较字符串前缀实现：将解析后的路径与 WORKDIR 都转为字符串并统一转为小写后，检查前者是否以后者开头。使用 lower() 是为了在大小写不敏感的文件系统（如 Windows、macOS 默认）上避免因大小写差异导致的误判。若不满足前缀条件，则抛出 ValueError，提示路径逃逸出工作区。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">潜在缺陷与风险</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该实现存在若干安全隐患。第一，前缀匹配方式不严谨：若 WORKDIR 为 /home/user/work，而解析路径为 /home/user/workspace_evil，字符串同样以 /home/user/work 开头，会被错误放行，应改用 Path.is_relative_to 或比较路径组件。第二，大小写处理在大小写敏感的文件系统（如 Linux ext4）上可能引入误判，将本应不同的路径视为相同。第三，resolve() 默认在 Python 3.6+ 中对不存在的路径也会尽力解析，但符号链接解析行为可能因平台和版本而异，存在 TOCTOU（检查与使用时间差）风险，即校验后路径可能被替换。第四，未处理 WORKDIR 本身未规范化的情况，若 WORKDIR 含 .. 或符号链接，前缀比较可能失效。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">参数与返回值</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">参数 p 为字符串类型的相对或绝对路径。返回值为 pathlib.Path 对象，表示落在工作目录内的绝对路径。函数通过抛出 ValueError 表达校验失败，调用方需捕获处理。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">改进建议</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">建议使用 path.is_relative_to(WORKDIR.resolve()) 进行结构化比较以替代字符串前缀匹配；对 WORKDIR 预先做一次 resolve() 并缓存；在安全敏感场景下考虑使用 os.open 配合 O_NOFOLLOW 或文件描述符方式规避 TOCTOU；同时明确大小写策略以匹配目标文件系统语义。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-read_file" class="explanation-section hidden">
+                <div id="title-read_file" class="hidden">read_file</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数实现了一个带分页能力的文本文件读取工具，主要设计意图是避免一次性将超大文件全部载入上下文（例如在 LLM 工具调用或交互式终端场景中），通过 offset/limit 参数按行分片读取，并在还有剩余内容时提示下一次读取的起始位置。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">参数设计</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">path 为文件路径，注释说明相对路径基于工作目录；offset 表示起始行号且从 1 开始计数，默认值为 1；limit 表示本次最多读取的行数，默认 None 表示读到文件末尾。返回值是字符串形式的文件内容，可能附带续读提示。函数签名使用类型注解，可读性较好。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">路径安全处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">代码通过 safe_path(path) 对传入路径做了一层封装处理（该函数未在此处给出），推测用于路径规范化、限制在工作目录内或防止目录穿越等安全校验。这是将安全策略与业务逻辑解耦的常见做法，但具体安全性依赖 safe_path 的实现，需结合其定义评估。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">文件读取细节</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">使用 read_text 一次性读取整个文件，指定 encoding="utf-8" 并以 errors="replace" 容错，遇到无法解码的字节会替换而非抛异常，提升了鲁棒性。随后用 splitlines() 按行切分，能正确处理不同换行符（\n、\r\n 等）且不保留行尾换行符。需要注意：虽然对外表现为“分页”，但底层仍是一次性读入整个文件再切片，因此对内存占用并无优化，仅优化了返回给调用方的内容体积。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">分页边界计算</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">start = max(1, offset) 保证起始行不小于 1，防止负数或 0 导致异常切片；end 在未指定 limit 时取总行数，否则取 min(len(lines), start + limit - 1)，既实现了“读 limit 行”的语义，又防止越界。这里 limit 为 0 或负数时会被当作假值走“读到末尾”分支，属于边界行为，调用方需注意。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">切片与拼接</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">通过 lines[start - 1:end] 取出目标行区间（列表下标从 0 开始，故减 1），再用 "\n".join 重新拼接为字符串。这种基于列表切片的实现简洁高效，且天然兼容 offset 超出文件长度的情况（此时返回空字符串）。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">续读提示机制</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">当 end < len(lines) 时，在结果末尾追加形如 "... (N more lines, continue with offset=M)" 的提示，其中 N 为剩余行数、M 为下一次应使用的 offset（end + 1）。该设计让调用方（尤其是自动化代理）能自主决定是否继续分页读取，形成可迭代的读取协议。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">潜在改进点</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">一是大文件场景下可改用逐行迭代（如 itertools.islice）实现真正的流式分页以降低内存；二是 limit 为 0 或负数时语义不明确，建议显式校验；三是续读提示混入返回内容，若调用方需要纯文本内容可能造成干扰，可考虑通过返回值元组或独立字段区分内容与元信息。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-write_file" class="explanation-section hidden">
+                <div id="title-write_file" class="hidden">write_file</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数实现了一个带安全校验的文件写入操作，其核心职责是将给定的字符串内容完整写入指定路径的文件中。函数采用“整体覆盖”语义，即无论目标文件是否已存在，都会用新内容替换原有内容，而非追加写入。这种设计意图通常用于配置文件生成、代码文件输出、模板渲染结果落盘等场景，强调写入结果的确定性和幂等性。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">参数设计</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数接收两个参数：path 为目标文件路径字符串，content 为待写入的完整内容。返回值是一个描述写入结果的字符串，包含写入的字节数（实际为字符数，见下文分析）和原始路径。这种返回设计便于调用方记录日志或向用户反馈操作结果，同时保持了函数无副作用输出的简洁性。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">路径安全处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数首先调用 safe_path(path) 对传入路径进行安全化处理，这是关键的防御性设计。虽然 safe_path 的具体实现未在此代码中展示，但从命名和调用位置可以推断，它可能负责路径规范化、防止路径穿越攻击（如 ../ 逃逸）、限制写入范围等安全职责。将安全校验前置到所有文件操作之前，体现了“先验证后执行”的安全编程原则。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">目录自动创建</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">通过 file_path.parent.mkdir(parents=True, exist_ok=True) 实现父目录的自动创建。parents=True 表示递归创建所有不存在的上级目录，exist_ok=True 表示目录已存在时不抛出异常。这一设计使函数对调用方更加友好，调用者无需预先关心目录结构是否存在，降低了使用门槛，也避免了因目录缺失导致的写入失败。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">编码与写入</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">使用 file_path.write_text(content, encoding="utf-8") 完成实际写入。显式指定 UTF-8 编码是重要的技术细节，它避免了依赖系统默认编码（在不同平台上可能为 GBK、ASCII 等）带来的乱码风险，保证了跨平台行为的一致性。write_text 是 pathlib.Path 提供的便捷方法，内部会以文本模式打开文件并写入，同时自动处理文件的关闭。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">返回值语义</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">返回字符串 f"Wrote {len(content)} bytes to {path}" 存在一个值得注意的细节：len(content) 计算的是字符串的字符数，而非字节数。对于包含多字节字符（如中文）的内容，字符数与 UTF-8 编码后的实际字节数并不相等。因此返回值中的 "bytes" 表述在严格意义上不够准确，可能对调用方产生轻微误导。若需精确字节数，应使用 len(content.encode("utf-8"))。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">异常处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数未显式捕获任何异常，写入失败（如权限不足、磁盘空间不足、路径非法等）时会将异常向上抛出。这种设计将错误处理的责任交给调用方，保持了函数的单一职责，符合 Python 的 EAFP 风格，但也要求调用方具备相应的异常处理意识。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">整体评价</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数结构清晰、职责单一，通过安全路径校验、目录自动创建、显式编码指定等手段，实现了一个健壮且易用的文件写入工具。主要改进空间在于返回值中字节数的准确计算，以及可考虑在文档中明确说明覆盖语义和可能的异常类型，以进一步提升接口的严谨性。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-edit_file" class="explanation-section hidden">
+                <div id="title-edit_file" class="hidden">edit_file</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数实现了一个基于上下文精确匹配的文件内容替换工具，属于典型的“补丁式”编辑操作。其设计意图是让调用者通过提供一段与文件内容逐字符一致的原文片段（old_text），将其替换为新的片段（new_text），从而实现对文件的定点修改，避免使用正则表达式带来的复杂性和误匹配风险。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">参数设计</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数接收三个参数：path 表示目标文件路径；old_text 是待替换的原文片段，要求与文件内容逐字符一致且可跨多行；new_text 是替换后的新内容，传入空字符串时表示删除该段原文。返回值统一为字符串形式的结果信息，成功时返回 “Edited {path}”，失败时返回以 “Error:” 开头的错误描述，这种设计便于调用方通过字符串前缀判断执行状态。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">路径安全处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数首先调用 safe_path(path) 对传入路径进行安全校验与规范化，这通常用于防止路径穿越攻击（如包含 “../” 的恶意路径）或确保路径位于允许的工作目录内。该步骤将原始字符串路径转换为受控的 Path 对象 file_path，是安全边界的第一道防线。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">文件读取与编码</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">使用 file_path.read_text(encoding=“utf-8”) 以 UTF-8 编码一次性读取整个文件内容到内存中的 text 变量。显式指定编码避免了平台默认编码差异导致的问题，保证跨平台行为一致；同时整文件读入的方式适合中小型文本文件的编辑场景。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">存在性校验</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">通过 if old_text not in text 判断原文片段是否存在于文件内容中，若不存在则直接返回错误信息 “Error: text not found in {path}”，不进行任何写入操作。这一前置校验保证了操作的原子性语义——要么完整替换，要么完全不改动文件，避免产生部分修改的中间状态。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">精确单次替换</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">核心替换逻辑使用 text.replace(old_text, new_text, 1)，第三个参数 1 是关键：它限制只替换第一次出现的匹配项。这与函数文档中“只改这一处”的承诺一致，防止当 old_text 在文件中多次出现时误改其他位置，体现了“按上下文精确定位”的设计思想。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">写回与编码一致性</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">替换完成后通过 file_path.write_text(..., encoding=“utf-8”) 将新内容写回原文件，编码与读取时保持一致，确保不会因编码转换导致内容损坏。注意该写入方式是整体覆盖而非增量修改，因此不具备事务性或备份机制，若写入过程中断可能造成文件损坏。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">技术要点与局限</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数采用“读-改-写”模式，实现简洁但存在若干值得注意的特性：其一，非原子操作，读取与写入之间存在时间窗口，并发场景下可能丢失其他进程的修改；其二，old_text 必须逐字符精确匹配（包括空白与换行），对格式敏感；其三，未处理文件不存在、权限不足等异常，这些异常会以 Python 异常形式向上抛出而非转换为错误字符串返回，调用方需自行捕获处理。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-glob_files" class="explanation-section hidden">
+                <div id="title-glob_files" class="hidden">glob_files</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数实现了一个基于 glob 模式的文件路径匹配工具，用于在工作目录（WORKDIR）下按指定模式查找文件或目录，并返回匹配结果的相对路径列表。其设计意图是作为代码修改前的辅助定位工具，帮助开发者快速找到目标文件，避免盲目修改代码。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">参数设计</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数接收单一参数 pattern，类型为字符串，表示 glob 匹配模式。文档字符串中给出了多种示例，如 **/*.py 表示递归匹配所有 Python 文件，*.md 表示当前目录下的 Markdown 文件，src/**/*.ts 表示 src 目录下任意层级的 TypeScript 文件。其中 ** 是 glob 语法中用于递归匹配任意层目录的关键符号，体现了对深层目录结构的支持能力。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心实现</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数体由一行生成式表达式构成：通过 WORKDIR.glob(pattern) 获取匹配的 Path 对象迭代器，对每个路径对象调用 relative_to(WORKDIR) 转换为相对于工作目录的路径，再用 str() 转为字符串，最后通过 sorted() 进行字典序排序。排序保证了输出结果的稳定性和可预测性，便于阅读和比对。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">返回值处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数使用条件表达式决定返回值：当 matches 列表非空时，用换行符 "\n" 将各路径连接成单个字符串返回；当无匹配结果时，返回固定字符串 "(no matches)"。这种设计将列表统一转换为字符串输出，便于直接打印或嵌入到文本响应中，同时用明确的占位提示区分"无匹配"与"空结果"两种情况。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">依赖与上下文</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数依赖外部定义的全局变量 WORKDIR，该变量应为 pathlib.Path 类型对象，代表工作目录的根路径。这种设计将目录范围限定在 WORKDIR 之内，既保证了相对路径输出的简洁性，也隐含了安全边界——匹配范围不会超出工作目录。但这也意味着函数不具备独立性，其行为强依赖于 WORKDIR 的正确初始化。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">技术要点</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">一是使用 pathlib 的 glob 方法而非 glob 模块，前者返回 Path 对象，便于链式调用 relative_to 等方法；二是 relative_to 的使用确保了输出路径的可读性和可移植性，避免暴露绝对路径；三是 sorted 排序使结果具有确定性，有利于测试和结果复现；四是文档字符串明确提示"改代码前先定位文件"，体现了该函数在开发工作流中的定位价值。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">潜在局限</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数未对 pattern 参数做合法性校验，非法模式可能引发异常；未处理 WORKDIR 不存在或匹配到目录的情况；返回值为单一字符串而非列表，调用方若需结构化数据需自行拆分。此外，若匹配结果极多，拼接成单个字符串可能较长，但考虑到其定位辅助用途，这一取舍是合理的。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-agent_loop" class="explanation-section hidden">
+                <div id="title-agent_loop" class="hidden">agent_loop</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数实现了一个典型的 Agent 循环（ReAct 风格），通过反复调用大语言模型（LLM）并执行其请求的工具，直到模型不再请求工具或达到最大轮数为止。它是工具调用型 Agent 的主控流程，负责维护对话消息列表、解析工具调用、执行工具并将结果回传给模型。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计意图</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数采用“思考-行动-观察”的迭代模式：模型先输出内容或工具调用，代码执行工具并把结果作为 tool 消息追加，再让模型基于新信息继续推理。通过 MAX_ROUNDS 限制循环次数，防止模型陷入无限工具调用循环，保证系统可控性。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">循环控制</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">使用 for _ in range(MAX_ROUNDS) 作为外层循环，每轮调用一次 LLM。循环的退出条件有两个：一是模型返回的消息不含 tool_calls，此时直接返回模型内容；二是达到最大轮数，返回 “[Stopped] Reached max rounds limit.” 提示。这种双重退出机制兼顾了正常结束与异常保护。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">LLM 调用</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">通过 client.chat.completions.create 发起请求，传入 model、messages、tools、tool_choice=“auto” 和 max_tokens=8000。tool_choice=“auto” 表示由模型自行决定是否调用工具，max_tokens 限制单次响应长度，避免过长输出。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">assistant 消息构造</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">代码将模型响应转换为字典形式追加到 messages。关键细节是：当存在 tool_calls 时必须把工具调用信息一并写入 assistant 消息，且格式需符合 OpenAI 规范（包含 id、type、function.name、function.arguments）。这是后续 tool 消息能正确关联的前提。content 通过 _sanitize 处理，防止空值或非法字符。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">终止判断</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">在追加 assistant 消息后立即检查 message.tool_calls，若为空则说明模型已完成推理，直接返回 message.content。这一判断放在工具执行之前，确保无工具调用时不会进入执行分支。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">工具执行</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">遍历每个 tool_call，先解析 arguments（JSON 字符串），解析失败时降级为空字典 {}，避免因参数格式错误导致崩溃。随后检查工具名是否存在于 TOOL_MAP 中，未知工具返回错误字符串而非抛出异常，保证循环继续。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">异常处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">工具执行被 try/except 包裹，任何异常都会被捕获并转换为 “Error: {e}” 字符串。设计意图是“工具本身炸了也要把错误喂回模型”，让模型有机会根据错误信息调整策略，而不是让整个 Agent 崩溃。这是健壮性的重要体现。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">结果回传</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">每个工具执行结果都以 {“role”: “tool”, “tool_call_id”: tc.id, “content”: _sanitize(output)} 的形式追加到 messages。tool_call_id 必须与 assistant 消息中的 id 对应，这是 OpenAI 工具调用协议的要求，确保模型能将结果与请求匹配。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">日志与调试</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">代码使用 ANSI 颜色码打印调试信息：红色（\033[31m）标记未知工具错误，黄色（\033[33m）标记工具调用及参数（截断至 300 字符），工具输出截断至 2000 字符。这些打印有助于开发者观察 Agent 行为，但属于副作用输出，生产环境可能需要改为日志系统。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">潜在问题</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">一是 message.content 在工具循环内被重复打印（每个 tool_call 都判断一次），若模型同时返回内容和多个工具调用会造成重复输出；二是 _sanitize 的具体实现未展示，其行为影响消息合法性；三是未处理 API 调用本身的异常（如网络错误、限流），一旦 client.chat.completions.create 抛错，整个循环会中断；四是 MAX_ROUNDS 和 TOOL_MAP 等为外部全局变量，耦合度较高，不利于测试与复用。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+        </div>
+        </div>
+    </div>
+
+    <script>
+        let isResizing = false, currentResizer = null;
+        function startResize(e, id) { 
+            isResizing = true; 
+            currentResizer = id; 
+            document.body.style.cursor = 'col-resize'; 
+            document.addEventListener('mousemove', resize); 
+            document.addEventListener('mouseup', stopResize); 
+            e.preventDefault(); 
+        }
+        function resize(e) {
+            if (!isResizing) return;
+            const container = document.getElementById('container');
+            const rect = container.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const main = document.getElementById('main-panel');
+            const comp = document.getElementById('components-panel');
+            const expl = document.getElementById('explanation-panel');
+            const minW = 150;
+            if (currentResizer === 'resizer1') {
+                const rem = rect.width - mouseX - 6;
+                if (mouseX >= minW && rem >= minW * 2) {
+                    main.style.width = `${(mouseX / rect.width) * 100}%`;
+                    comp.style.width = `${((rem - 6) / rect.width) * 100 * 0.5}%`;
+                    expl.style.width = `${((rem - 6) / rect.width) * 100 * 0.5}%`;
+                }
+            } else {
+                const ew = rect.width - mouseX;
+                const mw = parseFloat(main.style.width) || 40;
+                const mwPx = (mw / 100) * rect.width;
+                const aw = rect.width - mwPx - 6;
+                if (ew >= minW && aw - ew >= minW) {
+                    expl.style.width = `${(ew / rect.width) * 100}%`;
+                    comp.style.width = `${((aw - ew - 6) / rect.width) * 100}%`;
+                }
+            }
+        }
+        function stopResize() { 
+            isResizing = false; 
+            currentResizer = null; 
+            document.body.style.cursor = 'default'; 
+            document.removeEventListener('mousemove', resize); 
+            document.removeEventListener('mouseup', stopResize); 
+        }
+
+        function switchTab(tabName) {
+            const codeTab = document.getElementById('tab-code');
+            const flowTab = document.getElementById('tab-flow');
+            const codeItem = document.getElementById('main-code-item');
+            const flowItem = document.getElementById('main-flow-item');
+
+            if (tabName === 'code') {
+                codeTab.classList.add('text-indigo-400', 'bg-indigo-500/10', 'border-b-2', 'border-indigo-500');
+                codeTab.classList.remove('text-gray-400', 'hover:text-white');
+                flowTab.classList.remove('text-indigo-400', 'bg-indigo-500/10', 'border-b-2', 'border-indigo-500');
+                flowTab.classList.add('text-gray-400', 'hover:text-white');
+                codeItem.classList.remove('hidden');
+                flowItem.classList.add('hidden');
+            } else {
+                flowTab.classList.add('text-indigo-400', 'bg-indigo-500/10', 'border-b-2', 'border-indigo-500');
+                flowTab.classList.remove('text-gray-400', 'hover:text-white');
+                codeTab.classList.remove('text-indigo-400', 'bg-indigo-500/10', 'border-b-2', 'border-indigo-500');
+                codeTab.classList.add('text-gray-400', 'hover:text-white');
+                flowItem.classList.remove('hidden');
+                codeItem.classList.add('hidden');
+            }
+        }
+
+        function switchFlowchart(index) {
+            const buttons = document.querySelectorAll('[onclick^="switchFlowchart"]');
+            buttons.forEach((btn, i) => {
+                if (i === index) {
+                    btn.classList.add('bg-indigo-500', 'text-white');
+                    btn.classList.remove('bg-slate-700', 'text-gray-300', 'hover:bg-slate-600');
+                } else {
+                    btn.classList.remove('bg-indigo-500', 'text-white');
+                    btn.classList.add('bg-slate-700', 'text-gray-300', 'hover:bg-slate-600');
+                }
+            });
+            
+            const flowcharts = document.querySelectorAll('[id^="flowchart-"]');
+            flowcharts.forEach((chart, i) => {
+                if (i === index) {
+                    chart.classList.remove('hidden');
+                } else {
+                    chart.classList.add('hidden');
+                }
+            });
+        }
+
+        let lastClickedCard = null;
+        function toggleCard(id) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById(id.replace('-content', '-arrow'));
+            if (content && arrow) { 
+                content.classList.toggle('hidden'); 
+                arrow.classList.toggle('expanded'); 
+            }
+        }
+
+        function showExplanation(key) {
+            document.querySelectorAll('.explanation-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.active-item').forEach(el => el.classList.remove('active-item'));
+            
+            const section = document.getElementById(`explanation-${key}`);
+            const title = document.getElementById(`title-${key}`);
+            
+            if (section && title) {
+                section.classList.remove('hidden');
+                document.getElementById('current-title').textContent = title.textContent;
+            }
+            
+            if (key === 'main') {
+                document.getElementById('main-code-item').classList.add('active-item');
+            } else {
+                const item = document.getElementById(`${key}-item`);
+                if (item) {
+                    item.classList.add('active-item');
+                    const contentEl = document.getElementById(`${key}-content`);
+                    const arrow = document.getElementById(`${key}-arrow`);
+                    if (lastClickedCard !== key) {
+                        contentEl.classList.remove('hidden');
+                        arrow.classList.add('expanded');
+                    }
+                    lastClickedCard = key;
+                }
+            }
+        }
+
+        function initFlowchartZoom() {
+            document.querySelectorAll('.flowchart-box').forEach(function(box) {
+                const svg = box.querySelector('svg');
+                if (!svg) return;
+                let scale = 1, baseWidth = 0, dragging = false, startX = 0, startY = 0, startL = 0, startT = 0;
+
+                function ensureBase() {
+                    if (baseWidth) return;
+                    const measured = svg.getBoundingClientRect().width;
+                    if (measured > 1) baseWidth = measured / scale;
+                }
+
+                box.addEventListener('wheel', function(e) {
+                    if (e.ctrlKey) return; // let browser zoom pass through
+                    e.preventDefault();
+                    ensureBase();
+                    if (!baseWidth) return;
+                    const rect = box.getBoundingClientRect();
+                    const mx = e.clientX - rect.left;
+                    const my = e.clientY - rect.top;
+                    const contentX = (mx + box.scrollLeft) / scale;
+                    const contentY = (my + box.scrollTop) / scale;
+                    const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+                    const next = Math.min(8, Math.max(0.2, scale * factor));
+                    if (next === scale) return;
+                    scale = next;
+                    svg.style.maxWidth = 'none';
+                    svg.style.width = (baseWidth * scale) + 'px';
+                    box.scrollLeft = contentX * scale - mx;
+                    box.scrollTop = contentY * scale - my;
+                }, { passive: false });
+
+                box.addEventListener('dblclick', function() {
+                    ensureBase();
+                    scale = 1;
+                    svg.style.width = baseWidth ? (baseWidth + 'px') : '100%';
+                    box.scrollLeft = 0;
+                    box.scrollTop = 0;
+                });
+
+                box.addEventListener('mousedown', function(e) {
+                    if (e.button !== 0) return;
+                    dragging = true;
+                    startX = e.clientX; startY = e.clientY;
+                    startL = box.scrollLeft; startT = box.scrollTop;
+                    e.preventDefault();
+                });
+                window.addEventListener('mousemove', function(e) {
+                    if (!dragging) return;
+                    box.scrollLeft = startL - (e.clientX - startX);
+                    box.scrollTop = startT - (e.clientY - startY);
+                });
+                window.addEventListener('mouseup', function() {
+                    dragging = false;
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initFlowchartZoom();
+            Prism.highlightAll();
+        });
+    </script>
+</body>
+</html>
