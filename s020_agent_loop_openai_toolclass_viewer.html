@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S020 Agent Loop Openai Toolclass - 代码解析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; padding: 0; }
+        .code-scroll { scrollbar-width: thin; scrollbar-color: #6366f1 #1e1b4b; }
+        .code-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .code-scroll::-webkit-scrollbar-track { background: #1e1b4b; }
+        .code-scroll::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 3px; }
+        .content-scroll { scrollbar-width: thin; scrollbar-color: #475569 #1e293b; }
+        .content-scroll::-webkit-scrollbar { width: 6px; }
+        .content-scroll::-webkit-scrollbar-track { background: #1e293b; }
+        .content-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .collapse-btn { transition: transform 0.3s ease; }
+        .collapse-btn.expanded { transform: rotate(180deg); }
+        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(99, 102, 241, 0.15); }
+        .active-item { background: rgba(99, 102, 241, 0.2) !important; border-color: #6366f1 !important; }
+        .resizer { width: 6px; cursor: col-resize; background: #334155; transition: background 0.2s; position: relative; z-index: 10; }
+        .resizer:hover { background: #6366f1; }
+        .resizer::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #334155; border-radius: 50%; opacity: 0; transition: opacity 0.2s; }
+        .resizer:hover::before { opacity: 1; background: #6366f1; }
+        .flowchart-box {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 15px;
+            overflow: auto;
+            cursor: grab;
+        }
+        .flowchart-box:active { cursor: grabbing; }
+        .flowchart-box svg {
+            display: block;
+            max-width: none;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 h-screen overflow-hidden">
+    <nav class="fixed top-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-b border-indigo-500/20 z-50">
+        <div class="px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white">S020 Agent Loop Openai Toolclass</h1>
+                    <p class="text-xs text-indigo-400">Python Code Analysis - s020_agent_loop_openai_toolclass.py</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-400">Python</span>
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div id="container" class="h-screen pt-14 flex">
+        <div id="main-panel" class="h-full flex flex-col border-r border-slate-700/50" style="width: 40%;">
+            <div class="bg-slate-800/50 border-b border-slate-700/50 px-4 py-3">
+                <h2 class="text-white font-semibold">程序视图</h2>
+                <p class="text-xs text-gray-400">s020_agent_loop_openai_toolclass.py</p>
+            </div>
+            <div class="flex border-b border-slate-700/50">
+                <button id="tab-code" class="px-4 py-2 text-sm font-medium transition-colors text-indigo-400 bg-indigo-500/10 border-b-2 border-indigo-500" onclick="switchTab('code')">代码</button>
+                <button id="tab-flow" class="px-4 py-2 text-sm font-medium transition-colors text-gray-400 hover:text-white" onclick="switchTab('flow')">流程图</button>
+            </div>
+            <div id="main-code-item" class="flex-1 overflow-auto p-4 cursor-pointer " onclick="showExplanation('main')">
+                <div class="bg-slate-800/70 rounded-xl border border-indigo-500/50 p-4 active-item">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="ml-2 text-xs text-gray-500">s020_agent_loop_openai_toolclass.py</span>
+                    </div>
+                    <div class="bg-slate-900 rounded-lg p-4 overflow-auto code-scroll">
+                        <pre class="text-xs leading-relaxed"><code class="language-python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+s020_agent_loop_openai_toolclass.py - Agent Loop（OpenAI 版 / 一个工具 = 一个类）
+
+核心循环与 s01 完全一致：
+
+    while True:
+        response = LLM(messages, tools)
+        if 没有 tool_calls: break
+        执行工具 -&gt; 把 tool 结果追加进 messages -&gt; 继续
+
+    +----------+      +-------+      +---------+
+    |   User   | ---&gt; |  LLM  | ---&gt; |  Tool   |
+    |  prompt  |      |       |      | execute |
+    +----------+      +---+---+      +----+----+
+                          ^               |
+                          |   tool_result |
+                          +---------------+
+                          (loop continues)
+
+与 s01 的唯一区别：工具不再是模块级函数，而是一个类对应一个工具
+（写法参考 s020/simple_react_agent.py 的 BaseTool + ToolRegistry）
+    1. BaseTool：父类，子类只写 name + execute()；to_openai_schema() 内部调用
+       tool_description_generator.generate_tool_description，从 execute 的类型注解
+       和 docstring（:param xxx:）自动生成 description / parameters，与 s01 一致。
+    2. RunBashTool(BaseTool)：唯一的工具，就是 s01 里的 run_bash，
+       共享配置（workdir / timeout / 危险命令黑名单）放在 self 上。
+    3. ToolRegistry：register(工具实例) / get / execute / get_definitions，
+       出错时返回 &#34;Error: ...&#34; 文本，照样喂回模型。
+    4. agent_loop 与 s01 同构，只是分发从 TOOL_MAP 换成 REGISTRY。
+
+扩展方式：新写一个 class XxxTool(BaseTool) -&gt; REGISTRY.register(XxxTool())，
+循环和下面两行常量都不用动。
+
+用法：
+    pip install openai python-dotenv
+    python s020_agent_loop_openai_toolclass.py
+&#34;&#34;&#34;
+
+import json
+import os
+import subprocess
+import sys
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+# 系统提示词里给模型看的「星期几」，中文比 %A 的英文更省 token 也更直观
+_WEEKDAYS = (&#34;星期一&#34;, &#34;星期二&#34;, &#34;星期三&#34;, &#34;星期四&#34;, &#34;星期五&#34;, &#34;星期六&#34;, &#34;星期日&#34;)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# 工具描述不再手写，交给 generate_tool_description 从 execute() 的签名 + docstring 自动生成
+try:
+    from tool_description_generator import generate_tool_description
+except ImportError:
+    sys.exit(&#34;[Error] 未找到 tool_description_generator.py，请把它放在本文件同级目录。&#34;)
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+# Windows 控制台：切到 UTF-8 代码页 + 启用 ANSI 颜色，失败也无妨
+if os.name == &#34;nt&#34;:
+    os.system(&#34;chcp 65001 &gt; nul&#34;)
+    os.system(&#34;&#34;)
+# 统一用 UTF-8 输出并容错，避免 GBK 控制台下 print 抛 UnicodeEncodeError
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding=&#34;utf-8&#34;, errors=&#34;replace&#34;)
+    except Exception:
+        pass
+
+load_dotenv(override=True)
+
+# ---------- LLM 客户端（OpenAI 兼容协议） ----------
+# 默认对接 DeepSeek（课程环境）；换成官方 OpenAI 时设置 OPENAI_BASE_URL=https://api.openai.com/v1
+client = OpenAI(
+    api_key=os.getenv(&#34;OPENAI_API_KEY&#34;),
+    base_url=os.getenv(&#34;OPENAI_BASE_URL&#34;, &#34;https://api.deepseek.com&#34;),
+)
+MODEL = os.getenv(&#34;MODEL_ID&#34;, &#34;deepseek-chat&#34;)
+
+
+SYSTEM = build_system()  # 模块级快照 = 本文件被 import 那一刻的时间；要最新时间请调 build_system()
+
+MAX_ROUNDS = 40  # 安全上限，防止模型不停调用工具烧钱
+
+
+# ---------- 注册工具，产出 agent_loop 需要的两份数据 ----------
+REGISTRY = ToolRegistry()
+REGISTRY.register(RunBashTool(os.getcwd()))
+
+TOOL_MAP = REGISTRY.as_map()      # 工具名 -&gt; 工具实例（对应 s01 里的 名字-&gt;函数）
+TOOLS = REGISTRY.get_definitions()  # OpenAI 规范的工具描述列表
+def main():
+    print(&#34;s020: Agent Loop (OpenAI) - 一个工具一个类&#34;)
+    print(f&#34;model  = {MODEL}&#34;)
+    print(f&#34;base   = {client.base_url}&#34;)
+    print(f&#34;cwd    = {os.getcwd()}&#34;)
+    print(f&#34;tools  = {&#39;, &#39;.join(TOOL_MAP) or &#39;(none)&#39;}&#34;)
+    print(&#34;输入问题并回车发送，输入 q 退出。\n&#34;)
+
+    history = [{&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: SYSTEM}]
+    while True:
+        try:
+            query = input(&#34;\033[36ms020 &gt;&gt; \033[0m&#34;)
+        except (EOFError, KeyboardInterrupt):
+            break
+        if query.strip().lower() in (&#34;q&#34;, &#34;exit&#34;, &#34;&#34;):
+            break
+
+        history.append({&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: _sanitize(query)})
+        answer = agent_loop(history)
+        print(answer)
+        print()
+
+
+if __name__ == &#34;__main__&#34;:
+    if not os.getenv(&#34;OPENAI_API_KEY&#34;):
+        sys.exit(&#34;[Error] 缺少 OPENAI_API_KEY，请在 .env 中配置。&#34;)
+    main()</code></pre>
+                    </div>
+                </div>
+            </div>
+            <div id="main-flow-item" class="flex-1 overflow-auto p-4 hidden">
+                <div class="bg-slate-800/70 rounded-xl border border-indigo-500/50 p-4 h-full flex flex-col">
+                    <div class="flex gap-2 mb-4 overflow-x-auto pb-2 flex-shrink-0">
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-indigo-500 text-white" onclick="switchFlowchart(0)">组件关系图</button>
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-slate-700 text-gray-300 hover:bg-slate-600" onclick="switchFlowchart(1)">主程序执行流程图</button>
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-slate-700 text-gray-300 hover:bg-slate-600" onclick="switchFlowchart(2)">agent_loop 核心循环流程图</button>
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-slate-700 text-gray-300 hover:bg-slate-600" onclick="switchFlowchart(3)">工具执行调用链图</button>
+                        
+                        <button class="px-3 py-1 text-sm font-medium rounded-full transition-colors bg-slate-700 text-gray-300 hover:bg-slate-600" onclick="switchFlowchart(4)">工具Schema生成流程图</button>
+                        
+                    </div>
+                    
+                    <div id="flowchart-0" class="flex-1 ">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 408 580" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-9f8719a8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="182.4" y1="310.0" x2="96.1" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-9f8719a8)"/><line x1="139.0" y1="190.0" x2="191.0" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-9f8719a8)"/><line x1="191.0" y1="70.0" x2="139.0" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-9f8719a8)"/><line x1="217.0" y1="70.0" x2="269.0" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-9f8719a8)"/><line x1="203.4" y1="310.0" x2="201.1" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-9f8719a8)"/><line x1="225.0" y1="310.0" x2="309.0" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-9f8719a8)"/><line x1="96.1" y1="430.0" x2="182.4" y2="510.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-9f8719a8)"/><g><rect x="30.0" y="390.0" width="89" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="74.5" y="414.2">BaseTool</tspan></text></g><g><rect x="149.5" y="270.0" width="109" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="204.0" y="294.2">RunBashTool</tspan></text></g><g><rect x="68.0" y="150.0" width="116" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="126.0" y="174.2">ToolRegistry</tspan></text></g><g><rect x="152.5" y="30.0" width="103" height="40" rx="10" ry="10" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="204.0" y="54.2">agent_loop</tspan></text></g><g><rect x="224.0" y="150.0" width="116" height="40" rx="10" ry="10" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="282.0" y="174.2">build_system</tspan></text></g><g><rect x="159.0" y="390.0" width="83" height="40" rx="10" ry="10" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="200.5" y="414.2">_decode</tspan></text></g><g><rect x="282.0" y="390.0" width="96" height="40" rx="10" ry="10" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="330.0" y="414.2">_sanitize</tspan></text></g><g><rect x="102.0" y="510.0" width="204" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="204.0" y="534.2">generate_tool_description</tspan></text></g><rect x="123.2" y="341.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="139.2" y="353.0" text-anchor="middle" font-size="11" fill="#e2e8f0">继承</text><rect x="137.0" y="221.0" width="56.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="165.0" y="233.0" text-anchor="middle" font-size="11" fill="#e2e8f0">管理实例</text><rect x="149.0" y="101.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="165.0" y="113.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="227.0" y="101.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="243.0" y="113.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="186.2" y="341.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="202.2" y="353.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="251.0" y="341.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="267.0" y="353.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text><rect x="123.2" y="461.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="139.2" y="473.0" text-anchor="middle" font-size="11" fill="#e2e8f0">调用</text></svg>
+                        </div>
+                    </div>
+                    
+                    <div id="flowchart-1" class="flex-1 hidden">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 1076" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-dee71a7d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="135.0" y1="70.0" x2="135.0" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-dee71a7d)"/><line x1="135.0" y1="190.0" x2="135.0" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-dee71a7d)"/><line x1="135.0" y1="310.0" x2="135.0" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-dee71a7d)"/><line x1="135.0" y1="430.0" x2="135.0" y2="510.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-dee71a7d)"/><line x1="135.0" y1="550.0" x2="135.0" y2="630.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-dee71a7d)"/><line x1="135.0" y1="686.0" x2="135.0" y2="766.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-dee71a7d)"/><line x1="135.0" y1="806.0" x2="135.0" y2="886.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-dee71a7d)"/><line x1="135.0" y1="926.0" x2="135.0" y2="1006.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-dee71a7d)"/><g><rect x="100.0" y="30.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="54.2">开始</tspan></text></g><g><rect x="66.0" y="150.0" width="138" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="174.2">导入依赖/配置编码</tspan></text></g><g><rect x="80.5" y="270.0" width="109" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="294.2">load_dotenv</tspan></text></g><g><rect x="67.0" y="390.0" width="136" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="414.2">创建OpenAI客户端</tspan></text></g><g><rect x="45.0" y="510.0" width="180" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="534.2">build_system生成SYSTEM</tspan></text></g><g><rect x="30.0" y="630.0" width="210" height="56" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="654.2">创建REGISTRY并注册RunBashTo</tspan><tspan x="135.0" y="670.2">ol</tspan></text></g><g><rect x="55.5" y="766.0" width="159" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="790.2">生成TOOL_MAP与TOOLS</tspan></text></g><g><rect x="71.5" y="886.0" width="127" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="910.2">agent_loop执行</tspan></text></g><g><rect x="100.0" y="1006.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="135.0" y="1030.2">结束</tspan></text></g></svg>
+                        </div>
+                    </div>
+                    
+                    <div id="flowchart-2" class="flex-1 hidden">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 259 1100" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-ad0ca902" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="129.5" y1="70.0" x2="129.5" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="190.0" x2="129.5" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="310.0" x2="129.5" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="450.0" x2="129.5" y2="530.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="570.0" x2="129.5" y2="650.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="690.0" x2="129.5" y2="770.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="770.0" x2="129.5" y2="310.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="830.0" x2="129.5" y2="910.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="450.0" x2="129.5" y2="910.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><line x1="129.5" y1="950.0" x2="129.5" y2="1030.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-ad0ca902)"/><g><rect x="94.5" y="30.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="54.2">开始</tspan></text></g><g><rect x="67.0" y="150.0" width="125" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="174.2">初始化messages</tspan></text></g><g><rect x="36.0" y="270.0" width="187" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="294.2">调用LLM(messages,tools)</tspan></text></g><g><polygon points="129.5,390.0 220.0,420.0 129.5,450.0 39.0,420.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5" stroke-linejoin="round"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="424.2">有tool_calls?</tspan></text></g><g><rect x="34.0" y="530.0" width="191" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="554.2">REGISTRY.execute执行工具</tspan></text></g><g><rect x="41.5" y="650.0" width="176" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="674.2">追加tool结果到messages</tspan></text></g><g><polygon points="129.5,770.0 229.0,800.0 129.5,830.0 30.0,800.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5" stroke-linejoin="round"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="804.2">达到MAX_ROUNDS?</tspan></text></g><g><rect x="75.5" y="910.0" width="108" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="934.2">返回最终回复</tspan></text></g><g><rect x="94.5" y="1030.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="129.5" y="1054.2">结束</tspan></text></g><rect x="119.5" y="481.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="129.5" y="493.0" text-anchor="middle" font-size="11" fill="#e2e8f0">是</text><rect x="92.1" y="531.0" width="74.7" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="129.5" y="543.0" text-anchor="middle" font-size="11" fill="#e2e8f0">否,继续循环</text><rect x="104.1" y="861.0" width="50.7" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="129.5" y="873.0" text-anchor="middle" font-size="11" fill="#e2e8f0">是,超限</text><rect x="119.5" y="671.0" width="20.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="129.5" y="683.0" text-anchor="middle" font-size="11" fill="#e2e8f0">否</text></svg>
+                        </div>
+                    </div>
+                    
+                    <div id="flowchart-3" class="flex-1 hidden">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1510 100" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-edf569f4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="133.0" y1="50.0" x2="213.0" y2="50.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-edf569f4)"/><line x1="383.0" y1="50.0" x2="463.0" y2="50.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-edf569f4)"/><line x1="626.0" y1="50.0" x2="706.0" y2="50.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-edf569f4)"/><line x1="857.0" y1="50.0" x2="937.0" y2="50.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-edf569f4)"/><line x1="1068.0" y1="50.0" x2="1148.0" y2="50.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-edf569f4)"/><line x1="1292.0" y1="50.0" x2="1372.0" y2="50.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-edf569f4)"/><line x1="1372.0" y1="50.0" x2="133.0" y2="50.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-edf569f4)"/><g><rect x="30.0" y="30.0" width="103" height="40" rx="10" ry="10" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="81.5" y="54.2">agent_loop</tspan></text></g><g><rect x="213.0" y="30.0" width="170" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="298.0" y="54.2">ToolRegistry.execute</tspan></text></g><g><rect x="463.0" y="30.0" width="163" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="544.5" y="54.2">RunBashTool.execute</tspan></text></g><g><rect x="706.0" y="30.0" width="151" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="781.5" y="54.2">subprocess执行命令</tspan></text></g><g><rect x="937.0" y="30.0" width="131" height="40" rx="10" ry="10" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="1002.5" y="54.2">_decode解码输出</tspan></text></g><g><rect x="1148.0" y="30.0" width="144" height="40" rx="10" ry="10" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="1220.0" y="54.2">_sanitize清理字符</tspan></text></g><g><rect x="1372.0" y="30.0" width="108" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="1426.0" y="54.2">返回结果文本</tspan></text></g><rect x="157.0" y="41.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="173.0" y="53.0" text-anchor="middle" font-size="11" fill="#e2e8f0">分发</text><rect x="395.0" y="41.0" width="56.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="423.0" y="53.0" text-anchor="middle" font-size="11" fill="#e2e8f0">查找实例</text><rect x="650.0" y="41.0" width="32.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="666.0" y="53.0" text-anchor="middle" font-size="11" fill="#e2e8f0">运行</text><rect x="869.0" y="41.0" width="56.0" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="897.0" y="53.0" text-anchor="middle" font-size="11" fill="#e2e8f0">原始输出</text><rect x="711.1" y="41.0" width="82.9" height="16" rx="4" fill="#0f172a" fill-opacity="0.85"/><text x="752.5" y="53.0" text-anchor="middle" font-size="11" fill="#e2e8f0">tool结果回填</text></svg>
+                        </div>
+                    </div>
+                    
+                    <div id="flowchart-4" class="flex-1 hidden">
+                        <div class="flowchart-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 274 972" width="100%" preserveAspectRatio="xMidYMid meet" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><defs><marker id="arrow-3df18d4f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><line x1="137.0" y1="70.0" x2="137.0" y2="150.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-3df18d4f)"/><line x1="137.0" y1="190.0" x2="137.0" y2="270.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-3df18d4f)"/><line x1="137.0" y1="310.0" x2="137.0" y2="390.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-3df18d4f)"/><line x1="137.0" y1="430.0" x2="137.0" y2="510.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-3df18d4f)"/><line x1="137.0" y1="550.0" x2="137.0" y2="630.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-3df18d4f)"/><line x1="137.0" y1="686.0" x2="137.0" y2="766.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-3df18d4f)"/><line x1="137.0" y1="822.0" x2="137.0" y2="902.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow-3df18d4f)"/><g><rect x="102.0" y="30.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="137.0" y="54.2">开始</tspan></text></g><g><rect x="35.0" y="150.0" width="204" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="137.0" y="174.2">BaseTool.to_openai_schema</tspan></text></g><g><rect x="35.0" y="270.0" width="204" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="137.0" y="294.2">generate_tool_description</tspan></text></g><g><rect x="59.5" y="390.0" width="155" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="137.0" y="414.2">读取execute类型注解</tspan></text></g><g><rect x="65.0" y="510.0" width="144" height="40" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="137.0" y="534.2">解析docstring参数</tspan></text></g><g><rect x="30.0" y="630.0" width="214" height="56" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="137.0" y="654.2">组装name/description/parame</tspan><tspan x="137.0" y="670.2">ters</tspan></text></g><g><rect x="32.0" y="766.0" width="210" height="56" rx="4" ry="4" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="137.0" y="790.2">ToolRegistry.get_definitio</tspan><tspan x="137.0" y="806.2">ns汇总</tspan></text></g><g><rect x="102.0" y="902.0" width="70" height="40" rx="20.0" ry="20.0" fill="#4338ca" stroke="#a5b4fc" stroke-width="1.5"/><text text-anchor="middle" font-size="12" fill="#ffffff" font-family="'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif"><tspan x="137.0" y="926.2">结束</tspan></text></g></svg>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div id="resizer1" class="resizer" onmousedown="startResize(event, 'resizer1')"></div>
+
+        <div id="components-panel" class="h-full flex flex-col border-r border-slate-700/50 bg-slate-800/30" style="width: 40%;">
+            <div class="bg-slate-800/50 border-b border-slate-700/50 px-4 py-3">
+                <h2 class="text-white font-semibold">组件列表</h2>
+                <p class="text-xs text-gray-400">核心类与函数实现</p>
+            </div>
+            <div class="flex-1 overflow-auto p-3 space-y-2 content-scroll">
+                
+                <div id="build_system-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('build_system-content'); showExplanation('build_system')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">build_system</h3>
+                                <p class="text-xs text-gray-400">生成系统提示词，里面带上「此刻」的日期与时间</p>
+                            </div>
+                        </div>
+                        <svg id="build_system-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="build_system-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def build_system() -&gt; str:
+    &#34;&#34;&#34;生成系统提示词，里面带上「此刻」的日期与时间
+
+    时间放在这里而不是写死在常量里，是因为 REPL 一轮对话可能跑很久，
+    跨天后旧的日期会把模型带偏；需要最新时间时重新调用本函数即可。
+    &#34;&#34;&#34;
+    now = datetime.now()
+    stamp = f&#34;{now.strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)} {_WEEKDAYS[now.weekday()]}&#34;
+    return (
+        f&#34;You are a coding agent at {os.getcwd()}. &#34;
+        f&#34;Current date and time: {stamp}. &#34;
+        &#34;Use the bash tool to solve tasks. Act, don&#39;t explain. &#34;
+        &#34;The shell is Windows cmd.exe: use dir / type / echo / findstr / copy / del, &#34;
+        &#34;never Unix commands like ls / cat / grep / wc.&#34;
+    )</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="_decode-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('_decode-content'); showExplanation('_decode')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">_decode</h3>
+                                <p class="text-xs text-gray-400">按 utf-8 -&gt; gbk 顺序解码命令输出，都失败则替换非法字符</p>
+                            </div>
+                        </div>
+                        <svg id="_decode-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="_decode-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def _decode(data: bytes) -&gt; str:
+    &#34;&#34;&#34;按 utf-8 -&gt; gbk 顺序解码命令输出，都失败则替换非法字符&#34;&#34;&#34;
+    for enc in (&#34;utf-8&#34;, &#34;gbk&#34;):
+        try:
+            return data.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return data.decode(&#34;utf-8&#34;, errors=&#34;replace&#34;)</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="_sanitize-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('_sanitize-content'); showExplanation('_sanitize')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">_sanitize</h3>
+                                <p class="text-xs text-gray-400">去掉 Windows 控制台可能引入的孤立代理字符（如 \udcxx）</p>
+                            </div>
+                        </div>
+                        <svg id="_sanitize-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="_sanitize-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def _sanitize(text) -&gt; str:
+    &#34;&#34;&#34;去掉 Windows 控制台可能引入的孤立代理字符（如 \\udcxx）
+
+    这类字符会让 openai SDK 在 JSON 序列化时报
+    UnicodeEncodeError: surrogates not allowed，必须在发往 API 前清洗。
+    &#34;&#34;&#34;
+    text = &#34;&#34; if text is None else str(text)
+    return text.encode(&#34;utf-8&#34;, errors=&#34;replace&#34;).decode(&#34;utf-8&#34;)</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="basetool-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('basetool-content'); showExplanation('basetool')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">BaseTool</h3>
+                                <p class="text-xs text-gray-400">工具父类：一个类 = 一个工具</p>
+                            </div>
+                        </div>
+                        <svg id="basetool-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="basetool-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">class BaseTool:
+    &#34;&#34;&#34;工具父类：一个类 = 一个工具
+
+    子类只需要：
+        name      -&gt; 暴露给大模型的工具名（必填，因为方法名固定叫 execute）
+        execute() -&gt; 真正干活的方法，写清类型注解和 docstring 即可
+
+    schema 全自动：to_openai_schema() 用 generate_tool_description 去解析
+    self.execute（bound method，签名里已经没有 self），自动拿到：
+        description -&gt; docstring 第一行
+        parameters  -&gt; 类型注解 + :param xxx: 说明 + 有无默认值 =&gt; required
+
+    想手工覆盖时，才在子类里写同名类属性：
+        description -&gt; 覆盖自动生成的描述
+        parameters  -&gt; 完全手写 JSON Schema
+    &#34;&#34;&#34;
+
+    name: str = &#34;&#34;
+    description: str = &#34;&#34;       # 可选覆盖，留空则用 execute 的 docstring
+    parameters: Dict[str, Any] = {}  # 可选覆盖，留空则自动生成
+
+    def execute(self, **kwargs: Any) -&gt; str:
+        &#34;&#34;&#34;执行工具并返回字符串结果（出错就返回 Error: ... 文本）&#34;&#34;&#34;
+        raise NotImplementedError
+
+    def to_openai_schema(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;转成 OpenAI 规范的 tools 条目
+
+        generate_tool_description 返回的已经是完整的 OpenAI tools 条目
+        （type / function.name / function.description / function.parameters），
+        这里不重建字典，只在需要覆盖时就地改字段，避免丢掉生成器新增的内容。
+        &#34;&#34;&#34;
+        # bound method：self 已绑定，sig/type hints/docstring 都和 s01 的普通函数一样解析
+        spec = generate_tool_description(self.execute)
+        # 唯一的必改项：bound method 的 __name__ 恒为 &#34;execute&#34;，工具名得用类属性
+        spec[&#34;function&#34;][&#34;name&#34;] = self.name or type(self).__name__
+        if self.description:                 # 有手写描述才覆盖自动生成的 docstring 首行
+            spec[&#34;function&#34;][&#34;description&#34;] = self.description
+        if self.parameters:                  # 有手写 JSON Schema 才覆盖自动生成的参数
+            spec[&#34;function&#34;][&#34;parameters&#34;] = self.parameters
+        return spec</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="toolregistry-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('toolregistry-content'); showExplanation('toolregistry')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 10V3L4 14h7v7l9-11h-7z&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">ToolRegistry</h3>
+                                <p class="text-xs text-gray-400">管理所有工具类实例（写法参考 simple_react_agent.py）</p>
+                            </div>
+                        </div>
+                        <svg id="toolregistry-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="toolregistry-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">class ToolRegistry:
+    &#34;&#34;&#34;管理所有工具类实例（写法参考 simple_react_agent.py）&#34;&#34;&#34;
+
+    def __init__(self):
+        self._tools: Dict[str, BaseTool] = {}
+
+    def register(self, tool: BaseTool) -&gt; &#34;ToolRegistry&#34;:
+        &#34;&#34;&#34;注册一个工具实例，返回 self 以便链式调用&#34;&#34;&#34;
+        if not tool.name:
+            raise ValueError(f&#34;Tool class {type(tool).__name__} 缺少 name&#34;)
+        if tool.name in self._tools:
+            raise ValueError(f&#34;Duplicate tool name: {tool.name}&#34;)
+        self._tools[tool.name] = tool
+        return self
+
+    def get(self, name: str) -&gt; Optional[BaseTool]:
+        &#34;&#34;&#34;按名字取工具，没有则返回 None&#34;&#34;&#34;
+        return self._tools.get(name)
+
+    def has(self, name: str) -&gt; bool:
+        &#34;&#34;&#34;工具是否已注册&#34;&#34;&#34;
+        return name in self._tools
+
+    def execute(self, name: str, params: Dict[str, Any]) -&gt; str:
+        &#34;&#34;&#34;执行工具；未知工具或工具内部异常都转成 Error 文本回给模型&#34;&#34;&#34;
+        tool = self._tools.get(name)
+        if tool is None:
+            return f&#34;Error: Unknown tool {name}&#34;
+        try:
+            return tool.execute(**(params or {}))
+        except Exception as e:  # 工具本身炸了（含参数给错）也要把错误喂回模型
+            return f&#34;Error: {e}&#34;
+
+    def get_definitions(self) -&gt; List[Dict]:
+        &#34;&#34;&#34;发给大模型的工具描述列表&#34;&#34;&#34;
+        return [tool.to_openai_schema() for tool in self._tools.values()]
+
+    def as_map(self) -&gt; Dict[str, BaseTool]:
+        &#34;&#34;&#34;工具名 -&gt; 工具实例（保持和 s01 的 TOOL_MAP 同名同用途）&#34;&#34;&#34;
+        return dict(self._tools)</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="runbashtool-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('runbashtool-content'); showExplanation('runbashtool')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">RunBashTool</h3>
+                                <p class="text-xs text-gray-400">执行一条 shell 命令并返回它的合并输出（Windows cmd.exe）</p>
+                            </div>
+                        </div>
+                        <svg id="runbashtool-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="runbashtool-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">class RunBashTool(BaseTool):
+    &#34;&#34;&#34;执行一条 shell 命令并返回它的合并输出（Windows cmd.exe）&#34;&#34;&#34;
+
+    name = &#34;run_bash&#34;
+    # description / parameters 都不写：交给 execute() 的 docstring 与类型注解自动生成
+
+    def __init__(self, workdir: str = None, timeout: int = 120):
+        # 共享配置挂在 self 上，这就是「用类写工具」相对散函数的最大好处
+        self.workdir = workdir or os.getcwd()
+        self.timeout = timeout
+        self.dangerous = [&#34;rm -rf /&#34;, &#34;sudo&#34;, &#34;shutdown&#34;, &#34;reboot&#34;, &#34;&gt; /dev/&#34;, &#34;format &#34;]
+
+    def execute(self, command: str) -&gt; str:
+        &#34;&#34;&#34;执行一条 shell 命令并返回它的输出
+
+        :param command: 要执行的 cmd 命令，例如 dir /b *.py、type a.txt、echo hi &gt; a.txt
+        :return: 命令的标准输出与错误输出（合并），无输出时返回占位文本
+        &#34;&#34;&#34;
+        if any(d in command for d in self.dangerous):
+            return &#34;Error: Dangerous command blocked&#34;
+        try:
+            r = subprocess.run(
+                command,
+                shell=True,
+                cwd=self.workdir,
+                capture_output=True,
+                timeout=self.timeout,
+            )
+            # 拿到原始字节后自己解码：Windows 中文输出多为 GBK，直接按 utf-8 解会得到替换符
+            raw = (r.stdout or b&#34;&#34;) + (r.stderr or b&#34;&#34;)
+            out = _decode(raw).strip()
+            if not out:
+                return f&#34;(no output, exit code {r.returncode})&#34;
+            return out[:50000]
+        except subprocess.TimeoutExpired:
+            return f&#34;Error: Timeout ({self.timeout}s)&#34;
+        except (FileNotFoundError, OSError) as e:
+            return f&#34;Error: {e}&#34;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="agent_loop-item" class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden cursor-pointer card-hover">
+                    <button class="w-full px-4 py-3 flex items-center justify-between bg-slate-800/70 hover:bg-slate-700/50 transition-colors" 
+                            onclick="toggleCard('agent_loop-content'); showExplanation('agent_loop')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    &lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12&#34;/&gt;
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-white font-medium text-sm">agent_loop</h3>
+                                <p class="text-xs text-gray-400">反复调用 LLM，直到它不再请求工具为止</p>
+                            </div>
+                        </div>
+                        <svg id="agent_loop-arrow" class="w-5 h-5 text-gray-400 collapse-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="agent_loop-content" class="hidden border-t border-slate-700/50">
+                        <div class="px-4 py-3 bg-slate-900/50 overflow-auto code-scroll">
+                            <pre class="text-xs"><code class="language-python">def agent_loop(
+    messages: list,
+    *,
+    client=None,                      # 可外部注入：自己的 key / 别的 OpenAI 兼容服务 / 测试用假 client
+    registry: ToolRegistry = None,    # 可外部注入：想用自己的工具集就传进来
+    tools: list = None,               # 默认由 registry 生成 OpenAI 规范的工具描述
+    model: str = None,                # 默认用模块级 MODEL
+    max_rounds: int = None,           # 默认用模块级 MAX_ROUNDS
+    max_tokens: int = 8000,
+    verbose: bool = True,             # False 时全程不 print，方便被别的程序调用
+) -&gt; str:
+    &#34;&#34;&#34;反复调用 LLM，直到它不再请求工具为止
+
+    外部依赖全部可注入，所以本文件被 import 后可以直接复用这个函数；
+    什么都不传时行为与原来完全一致（用模块级的 client / REGISTRY / MODEL），
+    即 agent_loop(messages) 这种老调用方式不受影响。
+
+    :param messages: 会话消息列表，会被原地追加 assistant / tool 消息
+    :param client: OpenAI 兼容客户端，不传则用本模块顶部的 client
+    :param registry: 工具注册表，不传则用本模块的 REGISTRY
+    :param tools: OpenAI 规范的工具描述列表，不传则取 registry.get_definitions()
+    :param model: 模型名，不传则用本模块的 MODEL
+    :param max_rounds: 安全轮数上限，不传则用本模块的 MAX_ROUNDS
+    :param max_tokens: 单次回复的 token 上限
+    :param verbose: 是否打印模型回复、命令与工具输出
+    :return: 模型最后一轮的纯文本回复；超过轮数上限时返回 [Stopped] 提示
+    &#34;&#34;&#34;
+    # 没显式传的，退回模块级默认值；注意 client 与模块级同名，只能走 globals() 取
+    if client is None:
+        client = globals()[&#34;client&#34;]
+    if registry is None:
+        registry = REGISTRY
+    if tools is None:
+        tools = registry.get_definitions()
+    if model is None:
+        model = MODEL
+    if max_rounds is None:
+        max_rounds = MAX_ROUNDS
+
+    for _ in range(max_rounds):
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            tools=tools,
+            tool_choice=&#34;auto&#34;,
+            max_tokens=max_tokens,
+        )
+        message = response.choices[0].message
+
+        # 1) 追加 assistant 消息（有工具调用时必须带上 tool_calls）
+        assistant_msg = {&#34;role&#34;: &#34;assistant&#34;, &#34;content&#34;: _sanitize(message.content or &#34;&#34;)}
+        if message.tool_calls:
+            assistant_msg[&#34;tool_calls&#34;] = [
+                {
+                    &#34;id&#34;: tc.id,
+                    &#34;type&#34;: &#34;function&#34;,
+                    &#34;function&#34;: {
+                        &#34;name&#34;: tc.function.name,
+                        &#34;arguments&#34;: tc.function.arguments,
+                    },
+                }
+                for tc in message.tool_calls
+            ]
+        messages.append(assistant_msg)
+
+        # 2) 没有工具调用 =&gt; 循环结束
+        if not message.tool_calls:
+            return message.content or &#34;&#34;
+
+        # 3) 执行每个工具调用
+        for tc in message.tool_calls:
+            if verbose and message.content:
+                print(message.content)
+
+            func_name = tc.function.name
+            try:
+                func_args = json.loads(tc.function.arguments or &#34;{}&#34;)
+            except json.JSONDecodeError:
+                func_args = {}
+
+            if not registry.has(func_name):
+                output = f&#34;Error: Unknown tool {func_name}&#34;
+                if verbose:
+                    print(f&#34;\033[31m! {output}\033[0m&#34;)
+            else:
+                if verbose:
+                    print(f&#34;\033[33m$ {func_args.get(&#39;command&#39;, &#39;&#39;)}\033[0m&#34;)
+                output = registry.execute(func_name, func_args)
+                if verbose:
+                    print(output[:2000])
+
+            # 4) 按 OpenAI 规范把结果回传
+            messages.append(
+                {
+                    &#34;role&#34;: &#34;tool&#34;,
+                    &#34;tool_call_id&#34;: tc.id,
+                    &#34;content&#34;: _sanitize(output),
+                }
+            )
+
+    return &#34;[Stopped] Reached max rounds limit.&#34;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <div id="resizer2" class="resizer" onmousedown="startResize(event, 'resizer2')"></div>
+
+        <div id="explanation-panel" class="h-full flex flex-col" style="width: 20%;">
+            <div class="bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border-b border-indigo-500/20 px-4 py-3">
+            <h2 class="text-white font-semibold">代码解析</h2>
+            <p id="current-title" class="text-sm text-yellow-400">主程序入口</p>
+        </div>
+        <div id="explanation-content" class="flex-1 overflow-auto p-4 bg-slate-800/20 content-scroll">
+            <div id="explanation-main" class="explanation-section">
+                <div id="title-main" class="hidden">主程序入口</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">功能概述</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该程序实现了一个基于 OpenAI 兼容协议（默认对接 DeepSeek）的 Agent Loop（智能体循环）示例。其核心思想是让大语言模型（LLM）在需要时调用外部工具（此处为执行 Bash 命令），并将工具执行结果回传给模型，循环往复直到模型不再请求工具调用为止。与前一版本（s01）相比，本版本的主要差异在于工具的组织方式：工具不再是模块级函数，而是采用面向对象设计，一个工具对应一个类，通过 BaseTool 基类和 ToolRegistry 注册表进行统一管理，从而提升可扩展性。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">入口点与执行流程</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">程序的入口点是文件末尾的 if __name__ == "__main__" 代码块。它首先检查环境变量 OPENAI_API_KEY 是否存在，若缺失则通过 sys.exit 输出错误并终止。校验通过后调用 main() 函数。main() 是交互式主循环的起点：打印模型、base_url、当前工作目录、可用工具列表等启动信息，然后初始化对话历史 history（首条为 system 消息），进入一个 while True 循环，通过 input() 读取用户输入。若输入为 q、exit 或空字符串则退出；否则将用户输入经 _sanitize 处理后追加到 history，调用 agent_loop(history) 获取回答并打印。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">关键初始化步骤与配置</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">模块加载阶段完成了多项关键初始化。首先是路径处理：将当前文件所在目录插入 sys.path，确保能导入同级的 tool_description_generator 模块；若导入失败则直接退出并提示。其次是控制台兼容处理：在 Windows 上切换代码页到 UTF-8 并启用 ANSI 颜色，同时对 stdout 和 stderr 调用 reconfigure 设置 UTF-8 编码与容错，避免 GBK 控制台下打印中文报错。接着通过 load_dotenv(override=True) 加载 .env 配置，随后创建 OpenAI 客户端，api_key 取自 OPENAI_API_KEY，base_url 默认指向 DeepSeek 的接口（可通过 OPENAI_BASE_URL 覆盖），模型 ID 由 MODEL_ID 决定，默认 deepseek-chat。此外还定义了 MAX_ROUNDS = 40 作为安全上限，防止模型无限调用工具导致费用失控。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">主要组件的创建与交互</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">程序包含几个核心组件。BaseTool 是工具基类，子类只需实现 name 和 execute()，其 to_openai_schema() 方法会调用 generate_tool_description，从 execute 的类型注解和 docstring（:param 形式）自动生成 OpenAI 规范的工具描述，避免手写 schema。RunBashTool 继承 BaseTool，是唯一的实际工具，等价于 s01 中的 run_bash，其共享配置（工作目录、超时、危险命令黑名单）作为实例属性保存在 self 上。ToolRegistry 负责管理工具实例，提供 register、get、execute、get_definitions 等方法，执行出错时返回 "Error: ..." 文本并照常回传给模型。模块级代码创建了 REGISTRY 实例并注册 RunBashTool(os.getcwd())，随后通过 as_map() 生成 TOOL_MAP（工具名到实例的映射）和 get_definitions() 生成 TOOLS（OpenAI 规范的工具描述列表），这两份数据供 agent_loop 使用。SYSTEM 提示词通过 build_system() 在模块加载时生成快照，其中包含中文星期几等信息。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">主循环逻辑</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">agent_loop 的逻辑与 s01 同构：在最多 MAX_ROUNDS 轮内，调用 LLM（传入 messages 和 tools），若响应中没有 tool_calls 则跳出循环并返回最终文本；否则遍历每个 tool_call，从 TOOL_MAP（或 REGISTRY）中按名称取出对应工具实例并执行，将执行结果以 role 为 tool 的消息追加进 messages，然后继续下一轮。这种“模型请求工具—执行工具—回传结果—再次请求模型”的闭环正是 Agent Loop 的核心。外层 main() 的交互循环则负责接收用户输入、维护跨轮次的对话历史，并在每轮结束后打印模型回答。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">扩展性与设计要点</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该设计强调可扩展性：新增工具只需编写一个继承 BaseTool 的类并调用 REGISTRY.register(XxxTool())，agent_loop 主循环以及 TOOL_MAP、TOOLS 两行常量都无需改动。工具描述由签名和 docstring 自动生成，减少了手写 schema 的维护成本。同时，MAX_ROUNDS 上限、危险命令黑名单、超时控制等机制共同构成了安全与成本防护。整体上，程序将“循环控制”“工具注册”“描述生成”“LLM 调用”解耦为独立组件，结构清晰，便于教学与二次开发。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            
+            <div id="explanation-build_system" class="explanation-section hidden">
+                <div id="title-build_system" class="hidden">build_system</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数 build_system 用于动态生成一段系统提示词（system prompt），供编码智能体（coding agent）在对话开始时注入到模型上下文中。提示词内容包含三部分关键信息：当前工作目录、精确到秒的日期时间与星期、以及运行环境的操作约束（Windows cmd.exe 而非 Unix shell）。函数返回一个拼接完成的字符串，供上层调用方直接使用。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计意图</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">将时间信息放在函数内部实时计算，而不是固化为模块级常量，是这段代码最核心的设计考量。注释明确说明了原因：REPL 式的一轮对话可能持续很久，若日期在会话开始时被写死，跨天后模型仍会基于过期日期推理，从而产生偏差。通过把 build_system 设计为可重复调用的工厂函数，调用方在需要刷新时间时只需再次调用即可获得最新提示词，实现了时间敏感信息与提示词模板的解耦。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">时间格式化细节</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数使用 datetime.now() 获取本地当前时间，并通过 strftime('%Y-%m-%d %H:%M:%S') 格式化为「年-月-日 时:分:秒」的标准形式，便于模型解析。星期部分没有使用 strftime 的 %A 或 %a（其结果受系统 locale 影响，可能输出中文或其他语言），而是通过 now.weekday() 返回的 0-6 整数索引去查表 _WEEKDAYS，从而保证星期名称的输出稳定、可控、与 locale 无关。这是一个值得注意的健壮性处理。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">环境信息注入</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">提示词中通过 os.getcwd() 动态获取当前工作目录并嵌入，使模型了解自己操作的文件系统位置，这对编码智能体执行相对路径操作尤为重要。该值同样是运行时求值，若进程切换了工作目录，重新调用本函数即可反映最新路径。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">行为约束设计</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">提示词后半部分对模型行为做了两类约束。其一是行为风格约束："Act, don't explain."，要求模型直接执行动作而非冗长解释，符合编码智能体的工具调用范式。其二是平台约束：明确声明 shell 为 Windows cmd.exe，并列举了 dir、type、echo、findstr、copy、del 等合法命令，同时显式禁止 ls、cat、grep、wc 等 Unix 命令。这种正反例结合的写法能有效降低模型在 Windows 环境下误用 Unix 命令的概率，是提示词工程中常见的防御性设计。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">返回值与纯函数特性</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数无参数、返回 str，除读取系统时间与当前目录外不修改任何外部状态，属于准纯函数（依赖环境但无副作用），易于测试与复用。字符串使用多段 f-string 与普通字符串隐式拼接，可读性较好，但需注意各片段末尾的空格需手动维护以保证最终提示词的分词正确。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">潜在改进点</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">一是 _WEEKDAYS 作为外部依赖未在本函数中体现，若其长度不足 7 或索引语义与 weekday() 不一致会引发错误，建议在模块层做断言或使用常量元组。二是时区问题：datetime.now() 返回本地朴素时间，若部署环境时区不确定，可考虑使用带时区的 datetime.now(timezone.utc).astimezone() 以增强可移植性。三是提示词内容硬编码在函数体内，若未来需要多平台（如 Linux/macOS）支持，可考虑将平台相关片段参数化或抽离为配置。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-_decode" class="explanation-section hidden">
+                <div id="title-_decode" class="hidden">_decode</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数 _decode 的核心功能是将字节串（bytes）转换为字符串（str），并采用多编码回退策略来应对不同来源的命令输出。设计意图非常明确：在跨平台或跨语言环境下执行系统命令时，输出字节流的编码往往不确定（例如 Windows 中文环境常见 GBK，Linux 常见 UTF-8），因此需要一个健壮的解码函数，尽可能正确地还原文本内容，而不是直接抛出异常导致程序中断。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">参数与返回值</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数接收一个名为 data 的 bytes 类型参数，返回一个 str 类型结果。类型注解清晰，便于静态检查和调用方理解接口契约。返回值始终为字符串，不会抛出解码异常，这体现了“永不失败”的容错设计理念。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">解码策略与回退顺序</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数使用 for 循环遍历编码元组 ("utf-8", "gbk")，按顺序尝试解码。优先尝试 UTF-8 是因为它是现代系统和网络传输的通用标准，覆盖面最广；若失败则回退到 GBK，主要针对中文 Windows 环境下的命令行输出。这种顺序安排兼顾了通用性与本地化场景。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">异常处理机制</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">在循环内部使用 try/except 捕获 UnicodeDecodeError。当某个编码无法正确解码字节序列时，捕获异常并通过 continue 进入下一次循环尝试下一个编码。这里只捕获特定的 UnicodeDecodeError，而非宽泛的 Exception，属于精确异常处理，避免掩盖其他潜在错误（如类型错误），是良好的编程实践。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">最终兜底方案</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">如果 UTF-8 和 GBK 都解码失败，函数执行最后的 return data.decode("utf-8", errors="replace")。这里使用 errors="replace" 参数，将无法解码的字节替换为替换字符（通常是 U+FFFD），保证函数一定能返回字符串而不抛出异常。这是一种“尽力而为”的降级策略，确保调用方始终能拿到可用的文本结果。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计权衡与局限</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该实现简单高效，适合大多数场景，但也存在一定局限：GBK 解码对任意字节序列的容错性较高，某些本应是其他编码（如 Big5、Shift-JIS）的数据可能被 GBK “错误地成功解码”而产生乱码，因为 GBK 的字节范围较宽。此外，errors="replace" 会丢失原始字节信息，若需保留可考虑使用 errors="backslashreplace"。总体而言，该函数在简洁性、健壮性和实用性之间取得了良好平衡，是处理不确定编码命令输出的合理方案。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-_sanitize" class="explanation-section hidden">
+                <div id="title-_sanitize" class="hidden">_sanitize</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数 _sanitize 的核心职责是对输入文本进行 Unicode 清洗，移除或替换掉可能导致后续 JSON 序列化失败的非法字符，特别是 Windows 控制台环境下可能产生的孤立代理字符（lone surrogates，如 \udcxx 范围内的字符）。设计意图是作为一道防御性屏障，在文本发往 OpenAI API 之前保证其可被安全地 UTF-8 编码和 JSON 序列化。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">问题背景</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">孤立代理字符是 UTF-16 编码体系中的残留产物。Unicode 代理区（U+D800 到 U+DFFF）本应成对出现以表示增补平面字符，但 Windows 控制台、剪贴板或某些输入源可能产生未配对的单个代理码点。Python 字符串可以容纳这类字符，但当 openai SDK 尝试将其序列化为 JSON 并编码为 UTF-8 时，会抛出 UnicodeEncodeError: surrogates not allowed，导致请求失败。该函数正是为规避这一运行时错误而存在。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">输入归一化</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数第一行 text = "" if text is None else str(text) 完成了输入的类型归一化。当传入 None 时返回空字符串，避免后续对 None 调用 encode 引发 AttributeError；对其他任意类型则强制转换为字符串，使函数具备一定的容错性，可接受非字符串输入而不崩溃。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心实现</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">关键逻辑是 text.encode("utf-8", errors="replace").decode("utf-8") 这一编码-解码往返操作。encode 阶段使用 errors="replace" 参数，意味着遇到无法编码为 UTF-8 的字符（即孤立代理）时，不会抛出异常，而是替换为 UTF-8 的替换字符 U+FFFD（显示为 �）。随后 decode 将字节流还原为合法的 Python 字符串。经过这一往返，所有非法代理字符都被替换为安全的替换符，字符串变为可安全序列化的形式。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">技术要点</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">使用 errors="replace" 而非 errors="ignore" 是有意为之：替换策略保留了"此处存在异常字符"的信息，便于调试和问题追溯，而忽略策略会静默丢弃字符，可能掩盖数据质量问题。此外，该实现利用了 UTF-8 编码器对代理字符的严格校验特性——合法的增补平面字符（如 emoji）会被正确编码为四字节序列并在解码后完整保留，只有真正非法的孤立代理才会被替换，因此不会误伤正常的多字节字符。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">返回值与副作用</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数返回清洗后的字符串，保证其可被 UTF-8 编码，从而可安全通过 JSON 序列化。函数为纯函数式设计，不修改外部状态，无副作用，可安全地在多处调用。对于已经是合法 UTF-8 的输入，编码-解码往返是幂等的，不会改变内容。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">性能考量</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">每次调用都会执行一次完整的编码与解码，对于超长文本会产生额外的内存分配与 CPU 开销。在需要高频清洗大量文本的场景下，可考虑先做快速检测（如尝试编码并捕获异常）以避免不必要的往返，但就当前用途（API 请求前的单次清洗）而言，该开销可以忽略，实现简洁性优先是合理取舍。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-basetool" class="explanation-section hidden">
+                <div id="title-basetool" class="hidden">BaseTool</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">BaseTool 是一个工具基类，采用“一个类对应一个工具”的设计模式，用于将 Python 类封装为符合 OpenAI Function Calling 规范的工具定义。其核心目标是把工具的描述、参数结构等信息自动化地从 execute 方法的签名、类型注解和 docstring 中提取出来，减少手写 JSON Schema 的重复劳动，同时保留手工覆盖的能力。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计意图</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该基类通过约定优于配置的思路，规定子类只需提供 name 类属性和实现 execute 方法即可。工具名固定由类属性 name 提供，因为方法名恒为 execute，无法从方法名推导工具名。描述和参数默认从 execute 的 docstring 与类型注解自动生成，只有在需要特殊定制时才通过同名类属性覆盖，从而在自动化与可控性之间取得平衡。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">类属性定义</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">name 为工具名，默认空字符串，在生成 schema 时若为空则回退到类名。description 为可选的描述覆盖项，留空则使用 execute 的 docstring 首行。parameters 为可选的 JSON Schema 覆盖项，留空则自动生成。三者均作为类属性存在，子类可按需覆盖。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">execute 方法</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">这是子类必须实现的抽象方法，签名使用 **kwargs 接收任意关键字参数，返回字符串结果，约定出错时返回以 Error: 开头的文本。基类中抛出 NotImplementedError，强制子类实现，起到接口约束作用。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">to_openai_schema 方法</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">这是核心转换方法，负责生成 OpenAI tools 条目。它调用 generate_tool_description 解析 self.execute 这个绑定方法（bound method），由于 self 已绑定，签名中不再包含 self，因此可以像解析普通函数一样获取类型注解、docstring 和参数信息。生成结果本身已是完整的 OpenAI tools 条目结构，包含 type、function.name、function.description、function.parameters 等字段。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">名称覆盖逻辑</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">由于绑定方法的 __name__ 恒为 execute，自动生成的工具名会是 execute，因此必须用类属性 name 覆盖。代码使用 self.name or type(self).__name__，即优先使用 name，为空时回退到类名，保证工具名始终有效且唯一可读。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">描述与参数覆盖逻辑</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">采用“就地修改”而非重建字典的策略：仅当 self.description 非空时才覆盖 function.description，仅当 self.parameters 非空时才覆盖 function.parameters。这种设计避免了重建字典时丢失生成器可能新增的字段，具有良好的向前兼容性。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">技术要点</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">一是利用绑定方法的签名解析特性，使 self 自动被排除，简化了参数提取；二是通过类属性实现可选的覆盖机制，兼顾自动化与灵活性；三是就地修改字典而非重建，保证与生成器输出结构的兼容性；四是用 name 回退到类名的方式处理工具命名，避免名称缺失。整体体现了约定式接口设计与元数据驱动 schema 生成的思想。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-toolregistry" class="explanation-section hidden">
+                <div id="title-toolregistry" class="hidden">ToolRegistry</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">ToolRegistry 是一个工具注册中心类，用于集中管理所有工具类实例。它承担了工具注册、查找、执行和描述导出等职责，是构建 ReAct 风格 Agent 时常用的基础设施组件。设计意图是将工具的注册与调用解耦，让 Agent 主循环只需通过工具名和参数字典即可调用任意工具，同时把工具执行过程中的异常统一转换为文本错误信息回传给大模型，避免异常中断整个推理流程。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">内部状态</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">类内部使用私有字典 _tools 存储工具，键为工具名称字符串，值为 BaseTool 类型实例。使用字典结构保证了按名称查找的时间复杂度为 O(1)，同时天然支持判断工具是否存在以及遍历所有工具。类型注解 Dict[str, BaseTool] 明确了存储结构，便于静态检查和阅读。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">构造函数</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">__init__ 方法仅初始化空字典 _tools，不接收任何参数。这种设计让注册表本身保持轻量，工具通过后续的 register 方法逐个注入，符合依赖注入和可扩展的设计思路。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">注册方法 register</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">register 方法接收一个 BaseTool 实例，先校验工具是否具有非空的 name 属性，若缺失则抛出 ValueError 并附带具体类名，便于定位问题。随后检查名称是否重复，重复注册同样抛出 ValueError，防止同名工具覆盖导致调用歧义。校验通过后将工具存入字典，并返回 self，从而支持链式调用写法，例如 registry.register(a).register(b)，使注册代码更简洁。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">查询方法 get 与 has</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">get 方法通过字典的 get 按名称取工具，未找到时返回 None 而非抛异常，调用方可以自行决定如何处理缺失情况。has 方法通过 in 运算符判断工具是否已注册，返回布尔值。两者配合提供了安全的查询能力，避免直接访问内部字典。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">执行方法 execute</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">execute 是核心方法，接收工具名和参数字典。首先查找工具，若不存在则返回格式化的错误文本 "Error: Unknown tool {name}"，而不是抛出异常。找到工具后，使用 params or {} 处理参数为 None 的情况，再通过关键字参数展开调用 tool.execute。整个调用包裹在 try/except 中，捕获所有异常并转换为 "Error: {e}" 文本返回。这种设计的关键意图是：无论工具不存在、参数错误还是工具内部逻辑崩溃，都以文本形式反馈给大模型，让模型有机会根据错误信息调整后续动作，而不是让整个 Agent 流程因异常而终止，这是 ReAct 类 Agent 容错设计的重要一环。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">描述导出 get_definitions</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">get_definitions 遍历所有已注册工具，调用每个工具的 to_openai_schema 方法，返回符合 OpenAI 函数调用格式的工具描述列表。该方法将工具注册表与具体的大模型 API 格式对接，使 Agent 可以把工具清单直接放入请求中，实现工具能力的动态暴露。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">映射导出 as_map</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">as_map 返回内部字典的浅拷贝，避免外部直接修改内部状态。注释说明其用途与 simple_react_agent.py 中的 TOOL_MAP 保持一致，便于与既有代码风格兼容，也方便需要以字典形式访问工具集合的场景使用。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计要点总结</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">整体设计体现了几个技术要点：一是通过名称到实例的映射实现工具的动态注册与查找；二是链式调用提升注册代码的可读性；三是异常统一转为文本错误，保证 Agent 循环的健壮性；四是通过 to_openai_schema 与 as_map 分别对接大模型协议和传统字典用法，兼顾扩展性与兼容性。该类职责单一、边界清晰，是 Agent 工具层良好的封装范例。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-runbashtool" class="explanation-section hidden">
+                <div id="title-runbashtool" class="hidden">RunBashTool</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">RunBashTool 是一个继承自 BaseTool 的工具类，用于在 Windows cmd.exe 环境下执行单条 shell 命令，并将标准输出与标准错误合并后返回给调用方。它的设计意图是为上层（如 Agent 或工具调用框架）提供一个受控、可配置、带安全防护的命令执行入口，同时通过类封装共享工作目录、超时时间等配置。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">类属性与元信息</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">类中只显式声明了 name = "run_bash"，而 description 和 parameters 故意留空。代码注释说明这些元信息由 execute() 的 docstring 与类型注解自动生成，这是一种“约定优于配置”的设计，减少重复描述，保证文档与签名一致，也便于框架通过反射提取工具描述和参数 schema。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">构造函数</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">__init__ 接收 workdir 和 timeout 两个可选参数。workdir 为空时回退到 os.getcwd()，timeout 默认 120 秒。构造函数还初始化了 dangerous 列表，包含 rm -rf /、sudo、shutdown、reboot、> /dev/、format 等危险命令片段。注释强调“共享配置挂在 self 上”是用类写工具相对散函数的最大好处，即配置与状态可复用、可注入。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">安全防护</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">execute 首先用 any(d in command for d in self.dangerous) 做子串匹配，命中即返回 "Error: Dangerous command blocked"。这是一种轻量级黑名单防护，实现简单但存在明显局限：子串匹配容易被绕过（如空格变形、变量拼接、大小写、编码混淆），也无法覆盖所有危险操作，因此只能作为第一道粗筛，不能替代真正的沙箱或权限隔离。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">命令执行</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">核心调用是 subprocess.run，参数包括 shell=True、cwd=self.workdir、capture_output=True、timeout=self.timeout。shell=True 使得可以直接执行 cmd 内建命令和管道重定向，符合工具定位；cwd 保证命令在指定工作目录下运行；capture_output 同时捕获 stdout 和 stderr；timeout 防止命令长时间挂起。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">输出解码</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">代码将 r.stdout 与 r.stderr 以字节形式拼接（对 None 用 b"" 兜底），再交给 _decode(raw) 解码。注释指出 Windows 中文输出多为 GBK，直接按 utf-8 解码会产生替换符，因此自行解码是必要的兼容处理。这体现了对跨编码环境的实际考量，但 _decode 的具体实现未在片段中给出，其健壮性取决于该函数是否做了多编码回退。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">结果处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">解码后调用 strip() 去除首尾空白。若结果为空，返回带退出码的占位文本 "(no output, exit code N)"，便于调用方区分“无输出”和“执行失败”。非空结果则截断到前 50000 个字符，防止超长输出撑爆上下文或内存，这是一种务实的资源保护措施。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">异常处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">显式捕获 subprocess.TimeoutExpired，返回带超时秒数的错误文本；捕获 FileNotFoundError 和 OSError，返回 "Error: {e}"。异常被转换为字符串返回值而非抛出，符合工具调用场景下“以文本反馈结果”的契约，使上层无需额外处理异常分支。不过未捕获其他异常（如解码异常、权限相关异常的子类差异），覆盖面可进一步完善。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计评价</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">整体结构清晰，职责单一，配置可注入，安全与资源限制都有考虑，适合作为 Agent 工具集中的一个基础执行器。主要改进空间在于：危险命令检测应改为更结构化的解析或白名单/沙箱机制；_decode 需明确多编码回退策略；截断 50000 字符时可附带截断提示；以及可考虑对 shell=True 的风险做更明确的文档说明。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div id="explanation-agent_loop" class="explanation-section hidden">
+                <div id="title-agent_loop" class="hidden">agent_loop</div>
+                <div class="space-y-4">
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">核心功能</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">agent_loop 实现了一个典型的 ReAct 风格智能体主循环：反复调用大语言模型（LLM），解析模型返回的工具调用请求，执行对应工具，把结果回填到消息列表，再继续下一轮，直到模型不再请求工具或达到轮数上限。函数最终返回模型最后一轮的纯文本回复，若超过 max_rounds 则返回固定的停止提示字符串。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">设计意图</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">该函数的核心设计目标是可复用性与可测试性。通过将所有外部依赖（client、registry、tools、model、max_rounds）设计为关键字参数并允许为 None，函数在无参调用时回退到模块级默认值，从而保持与旧调用方式 agent_loop(messages) 的完全兼容；同时允许调用方注入自定义客户端、工具集或测试替身，便于单元测试和跨服务复用。verbose 参数则让函数既可作为命令行工具直接运行，也可作为库被其他程序静默调用。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">参数默认值回退机制</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">函数开头对每个可选参数做 None 判断并回退到模块级变量。值得注意的是 client 参数与模块级变量同名，函数内部直接引用 client 会命中局部参数而非全局变量，因此代码显式使用 globals()["client"] 来获取模块级客户端，这是一个容易出错但处理正确的细节。registry 回退到 REGISTRY，tools 在未提供时通过 registry.get_definitions() 动态生成 OpenAI 规范的工具描述，model 与 max_rounds 分别回退到 MODEL 和 MAX_ROUNDS。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">主循环结构</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">使用 for _ in range(max_rounds) 作为安全上限，避免模型陷入无限工具调用循环。每轮调用 client.chat.completions.create，传入 model、messages、tools、tool_choice="auto" 和 max_tokens，其中 tool_choice="auto" 表示由模型自行决定是否调用工具。循环体按“追加 assistant 消息 → 判断是否结束 → 执行工具 → 回填结果”的顺序组织，逻辑清晰。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">assistant 消息构造</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">每轮先将模型回复追加到 messages。content 通过 _sanitize 处理（推测用于清理非法字符或编码问题），并在为空时用空字符串兜底。若存在 tool_calls，则按 OpenAI 规范将其转换为包含 id、type、function（name 与 arguments）的字典列表一并写入 assistant 消息。这一步是必须的，因为后续 tool 消息需要通过 tool_call_id 与之对应，缺失会导致 API 报错。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">循环终止条件</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">在追加 assistant 消息之后立即检查 message.tool_calls：若为空，说明模型已给出最终答复，函数直接返回 message.content 或空字符串。这一判断放在工具执行之前，保证纯文本回复不会被误当作需要继续处理的中间状态。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">工具执行与容错</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">对每个 tool_call，先尝试用 json.loads 解析 arguments，解析失败时回退为空字典 {}，避免因模型输出非法 JSON 导致整个循环崩溃。随后通过 registry.has 检查工具是否存在：不存在时构造 "Error: Unknown tool ..." 的错误文本作为工具输出回传，让模型有机会自我纠正；存在时调用 registry.execute 执行并获取输出。verbose 模式下会打印模型文本、命令（取 func_args 中的 command 字段）以及截断到 2000 字符的工具输出，并使用 ANSI 颜色码区分提示信息。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">结果回填规范</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">每个工具执行结果都以 {"role": "tool", "tool_call_id": tc.id, "content": _sanitize(output)} 的形式追加到 messages，严格遵循 OpenAI 的工具调用协议。tool_call_id 与 assistant 消息中的 id 一一对应，确保多工具并行调用时结果能正确归属。输出同样经过 _sanitize 处理，保证消息内容符合 API 要求。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">轮数上限处理</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">若 for 循环正常结束仍未返回（即达到 max_rounds 仍未停止），函数返回 "[Stopped] Reached max rounds limit."。这是一种防御性设计，防止模型持续请求工具导致资源耗尽或死循环。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <span class="shrink-0 px-2 py-1 bg-indigo-500/20 text-yellow-400 rounded text-sm font-medium">副作用与可变性</span>
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        
+                        <div class="flex-1">
+                            <p class="text-white text-base whitespace-pre-wrap break-words">messages 参数会被原地修改（追加 assistant 与 tool 消息），调用方传入的列表在函数返回后包含完整对话历史，这既是特性也需调用方注意。函数本身除打印（verbose 时）外无其他全局副作用，整体是同步阻塞式实现，未涉及并发或异步处理。</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+        </div>
+        </div>
+    </div>
+
+    <script>
+        let isResizing = false, currentResizer = null;
+        function startResize(e, id) { 
+            isResizing = true; 
+            currentResizer = id; 
+            document.body.style.cursor = 'col-resize'; 
+            document.addEventListener('mousemove', resize); 
+            document.addEventListener('mouseup', stopResize); 
+            e.preventDefault(); 
+        }
+        function resize(e) {
+            if (!isResizing) return;
+            const container = document.getElementById('container');
+            const rect = container.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const main = document.getElementById('main-panel');
+            const comp = document.getElementById('components-panel');
+            const expl = document.getElementById('explanation-panel');
+            const minW = 150;
+            if (currentResizer === 'resizer1') {
+                const rem = rect.width - mouseX - 6;
+                if (mouseX >= minW && rem >= minW * 2) {
+                    main.style.width = `${(mouseX / rect.width) * 100}%`;
+                    comp.style.width = `${((rem - 6) / rect.width) * 100 * 0.5}%`;
+                    expl.style.width = `${((rem - 6) / rect.width) * 100 * 0.5}%`;
+                }
+            } else {
+                const ew = rect.width - mouseX;
+                const mw = parseFloat(main.style.width) || 40;
+                const mwPx = (mw / 100) * rect.width;
+                const aw = rect.width - mwPx - 6;
+                if (ew >= minW && aw - ew >= minW) {
+                    expl.style.width = `${(ew / rect.width) * 100}%`;
+                    comp.style.width = `${((aw - ew - 6) / rect.width) * 100}%`;
+                }
+            }
+        }
+        function stopResize() { 
+            isResizing = false; 
+            currentResizer = null; 
+            document.body.style.cursor = 'default'; 
+            document.removeEventListener('mousemove', resize); 
+            document.removeEventListener('mouseup', stopResize); 
+        }
+
+        function switchTab(tabName) {
+            const codeTab = document.getElementById('tab-code');
+            const flowTab = document.getElementById('tab-flow');
+            const codeItem = document.getElementById('main-code-item');
+            const flowItem = document.getElementById('main-flow-item');
+
+            if (tabName === 'code') {
+                codeTab.classList.add('text-indigo-400', 'bg-indigo-500/10', 'border-b-2', 'border-indigo-500');
+                codeTab.classList.remove('text-gray-400', 'hover:text-white');
+                flowTab.classList.remove('text-indigo-400', 'bg-indigo-500/10', 'border-b-2', 'border-indigo-500');
+                flowTab.classList.add('text-gray-400', 'hover:text-white');
+                codeItem.classList.remove('hidden');
+                flowItem.classList.add('hidden');
+            } else {
+                flowTab.classList.add('text-indigo-400', 'bg-indigo-500/10', 'border-b-2', 'border-indigo-500');
+                flowTab.classList.remove('text-gray-400', 'hover:text-white');
+                codeTab.classList.remove('text-indigo-400', 'bg-indigo-500/10', 'border-b-2', 'border-indigo-500');
+                codeTab.classList.add('text-gray-400', 'hover:text-white');
+                flowItem.classList.remove('hidden');
+                codeItem.classList.add('hidden');
+            }
+        }
+
+        function switchFlowchart(index) {
+            const buttons = document.querySelectorAll('[onclick^="switchFlowchart"]');
+            buttons.forEach((btn, i) => {
+                if (i === index) {
+                    btn.classList.add('bg-indigo-500', 'text-white');
+                    btn.classList.remove('bg-slate-700', 'text-gray-300', 'hover:bg-slate-600');
+                } else {
+                    btn.classList.remove('bg-indigo-500', 'text-white');
+                    btn.classList.add('bg-slate-700', 'text-gray-300', 'hover:bg-slate-600');
+                }
+            });
+            
+            const flowcharts = document.querySelectorAll('[id^="flowchart-"]');
+            flowcharts.forEach((chart, i) => {
+                if (i === index) {
+                    chart.classList.remove('hidden');
+                } else {
+                    chart.classList.add('hidden');
+                }
+            });
+        }
+
+        let lastClickedCard = null;
+        function toggleCard(id) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById(id.replace('-content', '-arrow'));
+            if (content && arrow) { 
+                content.classList.toggle('hidden'); 
+                arrow.classList.toggle('expanded'); 
+            }
+        }
+
+        function showExplanation(key) {
+            document.querySelectorAll('.explanation-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.active-item').forEach(el => el.classList.remove('active-item'));
+            
+            const section = document.getElementById(`explanation-${key}`);
+            const title = document.getElementById(`title-${key}`);
+            
+            if (section && title) {
+                section.classList.remove('hidden');
+                document.getElementById('current-title').textContent = title.textContent;
+            }
+            
+            if (key === 'main') {
+                document.getElementById('main-code-item').classList.add('active-item');
+            } else {
+                const item = document.getElementById(`${key}-item`);
+                if (item) {
+                    item.classList.add('active-item');
+                    const contentEl = document.getElementById(`${key}-content`);
+                    const arrow = document.getElementById(`${key}-arrow`);
+                    if (lastClickedCard !== key) {
+                        contentEl.classList.remove('hidden');
+                        arrow.classList.add('expanded');
+                    }
+                    lastClickedCard = key;
+                }
+            }
+        }
+
+        function initFlowchartZoom() {
+            document.querySelectorAll('.flowchart-box').forEach(function(box) {
+                const svg = box.querySelector('svg');
+                if (!svg) return;
+                let scale = 1, baseWidth = 0, dragging = false, startX = 0, startY = 0, startL = 0, startT = 0;
+
+                function ensureBase() {
+                    if (baseWidth) return;
+                    const measured = svg.getBoundingClientRect().width;
+                    if (measured > 1) baseWidth = measured / scale;
+                }
+
+                box.addEventListener('wheel', function(e) {
+                    if (e.ctrlKey) return; // let browser zoom pass through
+                    e.preventDefault();
+                    ensureBase();
+                    if (!baseWidth) return;
+                    const rect = box.getBoundingClientRect();
+                    const mx = e.clientX - rect.left;
+                    const my = e.clientY - rect.top;
+                    const contentX = (mx + box.scrollLeft) / scale;
+                    const contentY = (my + box.scrollTop) / scale;
+                    const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+                    const next = Math.min(8, Math.max(0.2, scale * factor));
+                    if (next === scale) return;
+                    scale = next;
+                    svg.style.maxWidth = 'none';
+                    svg.style.width = (baseWidth * scale) + 'px';
+                    box.scrollLeft = contentX * scale - mx;
+                    box.scrollTop = contentY * scale - my;
+                }, { passive: false });
+
+                box.addEventListener('dblclick', function() {
+                    ensureBase();
+                    scale = 1;
+                    svg.style.width = baseWidth ? (baseWidth + 'px') : '100%';
+                    box.scrollLeft = 0;
+                    box.scrollTop = 0;
+                });
+
+                box.addEventListener('mousedown', function(e) {
+                    if (e.button !== 0) return;
+                    dragging = true;
+                    startX = e.clientX; startY = e.clientY;
+                    startL = box.scrollLeft; startT = box.scrollTop;
+                    e.preventDefault();
+                });
+                window.addEventListener('mousemove', function(e) {
+                    if (!dragging) return;
+                    box.scrollLeft = startL - (e.clientX - startX);
+                    box.scrollTop = startT - (e.clientY - startY);
+                });
+                window.addEventListener('mouseup', function() {
+                    dragging = false;
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initFlowchartZoom();
+            Prism.highlightAll();
+        });
+    </script>
+</body>
+</html>
